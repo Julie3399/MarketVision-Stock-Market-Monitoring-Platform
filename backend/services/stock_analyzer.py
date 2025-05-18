@@ -10,39 +10,38 @@ from time import sleep
 import random
 
 logger = logging.getLogger(__name__)
-
 class StockAnalyzer:
     def __init__(self):
-        # 创建图表保存目录
+        # Create charts directory
         self.charts_dir = Path(__file__).parent.parent / 'static' / 'charts'
         self.charts_dir.mkdir(parents=True, exist_ok=True)
         
-        # 设置多个用户代理
+        # Set multiple user agents
         self.user_agents = [
             "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36 OPR/108.0.0.0"
         ]
         
-        # 设置请求头（初始化时随机选择一个用户代理）
+        # Set request headers (randomly select a user agent during initialization)
         self.headers = {
             "User-Agent": random.choice(self.user_agents),
             "Accept": "application/json"
         }
         
-        # 添加请求配置
+        # Add request configuration
         self.max_retries = 3
-        self.base_delay = 2  # 基础延迟秒数
+        self.base_delay = 2  # Base delay in seconds
 
     def get_stock_data(self, ticker, period='1y', start=None, end=None):
-        """使用Yahoo Finance API获取股票数据（支持时间范围或时间段）"""
+        """Get stock data using Yahoo Finance API (supports date range or period)"""
         retries = 0
         delay = self.base_delay
         
         while retries <= self.max_retries:
             try:
-                # 每次请求前随机选择一个用户代理
+                # Randomly select a user agent before each request
                 self.headers["User-Agent"] = random.choice(self.user_agents)
                 
-                # 添加更多浏览器常见请求头
+                # Add more common browser headers
                 self.headers.update({
                     "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
                     "Accept-Language": "zh-CN,zh;q=0.9,en;q=0.8",
@@ -55,15 +54,15 @@ class StockAnalyzer:
                     "Upgrade-Insecure-Requests": "1"
                 })
                 
-                # 添加随机延迟，避免固定间隔请求
+                # Add random delay to avoid fixed interval requests
                 sleep_time = delay + random.uniform(0.5, 1.5)
-                logger.info(f"等待 {sleep_time:.2f} 秒后请求 {ticker} 数据")
+                logger.info(f"Waiting {sleep_time:.2f} seconds before requesting {ticker} data")
                 sleep(sleep_time)
                 
-                # 优先使用明确的时间范围参数
+                # Prioritize explicit date range parameters
                 use_date_range = start is not None or end is not None
                 
-                # 构建基础URL
+                # Build base URL
                 url = f"https://query2.finance.yahoo.com/v8/finance/chart/{ticker}"
                 params = {
                     "interval": "1d",
@@ -72,45 +71,42 @@ class StockAnalyzer:
                 }
 
                 if use_date_range:
-                    # 处理日期范围模式
+                    # Handle date range mode
                     start_date = pd.to_datetime(start)
                     end_date = pd.to_datetime(end)
                     
-                    # 转换为Unix时间戳（秒）
+                    # Convert to Unix timestamp (seconds)
                     params.update({
                         "period1": int(start_date.timestamp()),
                         "period2": int(end_date.timestamp())
                     })
                 else:
-                    # 处理时间段模式
+                    # Handle period mode
                     period_map = {
                         '1d': '1d', '5d': '5d', '1mo': '1mo', '3mo': '3mo',
                         '6mo': '6mo', '1y': '1y', '2y': '2y', '5y': '5y', 'max': 'max'
                     }
                     params["range"] = period_map.get(period, '1y')
 
-                # 发送请求
+                # Send request
                 response = requests.get(url, headers=self.headers, params=params)
                 
                 if response.status_code == 429:
-                    logger.warning(f"请求 {ticker} 遇到限流 (429)，尝试通过Google代理获取数据")
+                    logger.warning(f"Request for {ticker} hit rate limit (429), attempting to get data via Google proxy")
                     google_data = self.get_stock_data_via_google(ticker, period, params["interval"])
                     if google_data is not None:
-                        logger.info(f"成功通过Google代理获取 {ticker} 数据")
-                        # 不直接返回，而是将数据赋值给data变量，继续后续处理
+                        logger.info(f"Successfully retrieved {ticker} data via Google proxy")
                         data = google_data
-                        # 跳过重试逻辑，直接进入数据处理部分
                         break
                     else:
-                        logger.error(f"无法通过Google代理获取 {ticker} 数据")
-                        # 继续执行重试逻辑
+                        logger.error(f"Unable to get {ticker} data via Google proxy")
                         retries += 1
-                        delay *= 2  # 指数退避
-                        logger.warning(f"请求 {ticker} 遇到限流 (429)，第 {retries} 次重试，等待 {delay} 秒")
+                        delay *= 2  # Exponential backoff
+                        logger.warning(f"Request for {ticker} hit rate limit (429), retry {retries}, waiting {delay} seconds")
                         continue
                 
                 if response.status_code != 200:
-                    logger.error(f"获取{ticker}数据失败，状态码: {response.status_code}")
+                    logger.error(f"Failed to get {ticker} data, status code: {response.status_code}")
                     return None
 
                 data = response.json()
@@ -120,7 +116,7 @@ class StockAnalyzer:
                     timestamps = chart_data['timestamp']
                     quote = chart_data['indicators']['quote'][0]
                     
-                    # 创建DataFrame
+                    # Create DataFrame
                     df = pd.DataFrame({
                         'Open': quote.get('open', []),
                         'High': quote.get('high', []),
@@ -129,52 +125,52 @@ class StockAnalyzer:
                         'Volume': quote.get('volume', [])
                     }, index=pd.to_datetime(timestamps, unit='s'))
                     
-                    # 处理调整后的收盘价
+                    # Handle adjusted close price
                     if 'adjclose' in chart_data['indicators']:
                         df['Adj Close'] = chart_data['indicators']['adjclose'][0]['adjclose']
                     
-                    # 清理数据：移除NaN和重复索引
+                    # Clean data: remove NaN and duplicate indices
                     df = df.dropna().loc[~df.index.duplicated(keep='first')]
                     
-                    # 确保时间范围有效性（当使用start/end时）
+                    # Ensure date range validity (when using start/end)
                     if use_date_range:
                         df = df.loc[start_date:end_date]
                     
                     return df
 
                 except (KeyError, IndexError) as e:
-                    logger.error(f"解析{ticker}数据失败: {str(e)}")
+                    logger.error(f"Failed to parse {ticker} data: {str(e)}")
                     return None
                     
             except Exception as e:
-                logger.error(f"获取{ticker}股票数据异常: {str(e)}")
+                logger.error(f"Exception getting {ticker} stock data: {str(e)}")
                 retries += 1
-                delay *= 2  # 指数退避
+                delay *= 2  # Exponential backoff
                 if retries <= self.max_retries:
-                    logger.warning(f"第 {retries} 次重试获取 {ticker} 数据，等待 {delay} 秒")
+                    logger.warning(f"Retry {retries} getting {ticker} data, waiting {delay} seconds")
                 else:
-                    logger.error(f"获取 {ticker} 数据失败，已达到最大重试次数")
+                    logger.error(f"Failed to get {ticker} data, maximum retries reached")
                     return None
         
         return None
         
     def generate_daily_report(self, ticker):
-        """生成每日分析报告"""
+        """Generate daily analysis report"""
         try:
-            # 获取数据
+            # Get data
             hist = self.get_stock_data(ticker, '5d')
             if hist is None:
-                return {"error": "无法获取股票数据"}
+                return {"error": "Unable to get stock data"}
             
-            # 计算关键指标
+            # Calculate key metrics
             latest = hist.iloc[-1]
             prev_close = hist.iloc[-2]['Close']
             daily_change = (latest['Close'] - prev_close) / prev_close * 100
             
-            # 波动分析
+            # Volatility analysis
             atr = (hist['High'] - hist['Low']).mean()
             
-            # 生成报告
+            # Generate report
             report = {
                 "date": datetime.today().strftime('%Y-%m-%d'),
                 "price": latest['Close'],
@@ -193,33 +189,33 @@ class StockAnalyzer:
             return {"error": str(e)}
 
     def detect_abnormal_volume(self, data):
-        """成交量异动检测"""
+        """Volume anomaly detection"""
         avg_volume = data['Volume'].rolling(5).mean().iloc[-1]
         latest_volume = data['Volume'].iloc[-1]
         
         if latest_volume > avg_volume * 2:
-            return "成交量突破：当前成交量是5日均值的2倍以上"
+            return "Volume breakout: Current volume is more than 2x the 5-day average"
         elif latest_volume < avg_volume * 0.5:
-            return "交易清淡：当前成交量不足5日均值一半"
+            return "Low trading: Current volume is less than half of 5-day average"
         else:
-            return "成交量处于正常波动区间"
-
+            return "Volume is within normal range"
+        
     def generate_technical_signals(self, data):
-        """生成技术信号"""
+        """Generate technical signals"""
         signals = []
         
-        # 计算MACD
+        # Calculate MACD
         exp1 = data['Close'].ewm(span=12, adjust=False).mean()
         exp2 = data['Close'].ewm(span=26, adjust=False).mean()
         macd = exp1 - exp2
         signal = macd.ewm(span=9, adjust=False).mean()
         
         if macd.iloc[-1] > signal.iloc[-1] and macd.iloc[-2] <= signal.iloc[-2]:
-            signals.append("MACD金叉")
+            signals.append("MACD Golden Cross")
         elif macd.iloc[-1] < signal.iloc[-1] and macd.iloc[-2] >= signal.iloc[-2]:
-            signals.append("MACD死叉")
+            signals.append("MACD Death Cross")
             
-        # 计算RSI
+        # Calculate RSI
         delta = data['Close'].diff()
         gain = (delta.where(delta > 0, 0)).rolling(window=14).mean()
         loss = (-delta.where(delta < 0, 0)).rolling(window=14).mean()
@@ -227,14 +223,14 @@ class StockAnalyzer:
         rsi = 100 - (100 / (1 + rs))
         
         if rsi.iloc[-1] > 70:
-            signals.append(f"RSI超买 ({rsi.iloc[-1]:.1f})")
+            signals.append(f"RSI Overbought ({rsi.iloc[-1]:.1f})")
         elif rsi.iloc[-1] < 30:
-            signals.append(f"RSI超卖 ({rsi.iloc[-1]:.1f})")
+            signals.append(f"RSI Oversold ({rsi.iloc[-1]:.1f})")
             
         return signals
 
     def volatility_cluster_alert(self, data):
-        """波动率聚类分析"""
+        """Volatility cluster analysis"""
         returns = data['Close'].pct_change().dropna()
         clusters = []
         threshold = returns.std() * 1.5
@@ -246,150 +242,150 @@ class StockAnalyzer:
                 clusters.append(0)
         
         if sum(clusters) >= 3:
-            return "波动率聚集预警：近期出现3次以上异常波动"
-        return "波动率正常"
+            return "Volatility Cluster Warning: More than 3 abnormal fluctuations recently"
+        return "Normal Volatility"
 
     def money_flow_analysis(self, data):
         """
-        更敏感的资金流向分析，快速响应市场变化
+        More sensitive money flow analysis, quick market response
         """
         try:
-            # 计算价格变化率
+            # Calculate price change rate
             price_change = data['Close'].pct_change() * 100
             
-            # 计算成交量变化率
+            # Calculate volume change rate
             volume_change = data['Volume'].pct_change() * 100
             
-            # 计算典型价格
+            # Calculate typical price
             typical_price = (data['High'] + data['Low'] + data['Close']) / 3
             
-            # 计算 Money Flow
+            # Calculate Money Flow
             raw_money_flow = typical_price * data['Volume']
             
-            # 使用更短期的资金流指标
+            # Use shorter-term money flow indicators
             positive_flow = raw_money_flow.where(typical_price > typical_price.shift(1), 0).rolling(window=10).sum()
             negative_flow = raw_money_flow.where(typical_price < typical_price.shift(1), 0).rolling(window=10).sum()
             
-            # 计算 MFI（使用更短的周期）
+            # Calculate MFI (using shorter period)
             mfi = 100 - (100 / (1 + positive_flow / negative_flow))
             
-            # 计算 OBV 和短期变化
+            # Calculate OBV and short-term changes
             obv = (data['Volume'] * (~data['Close'].diff().le(0) * 2 - 1)).cumsum()
-            obv_change = obv.diff(3) / obv.abs().mean() * 100  # 缩短为3天
+            obv_change = obv.diff(3) / obv.abs().mean() * 100  # Shortened to 3 days
             
-            # 获取最新值
+            # Get latest values
             current_price_change = price_change.iloc[-1]
             current_volume_change = volume_change.iloc[-1]
             current_mfi = mfi.iloc[-1]
             current_obv_change = obv_change.iloc[-1]
             
-            # 更敏感的上涨特征判断
+            # More sensitive uptrend characteristics
             is_strong_uptrend = (
-                current_price_change > 2 and  # 降低到2%
-                current_volume_change > 30 and  # 降低到30%
-                current_obv_change > 3  # 降低到3%
+                current_price_change > 2 and  # Lowered to 2%
+                current_volume_change > 30 and  # Lowered to 30%
+                current_obv_change > 3  # Lowered to 3%
             )
             
-            # 更敏感的下跌特征判断
+            # More sensitive downtrend characteristics
             is_strong_downtrend = (
-                current_price_change < -2 and  # 提高到-2%
-                current_volume_change > 30 and  # 降低到30%
-                current_obv_change < -3  # 提高到-3%
+                current_price_change < -2 and  # Raised to -2%
+                current_volume_change > 30 and  # Lowered to 30%
+                current_obv_change < -3  # Raised to -3%
             )
             
-            # 综合分析（更敏感的判断标准）
+            # Comprehensive analysis (more sensitive criteria)
             if is_strong_uptrend:
-                if current_mfi > 70:  # 降低阈值
-                    return "主力资金大量涌入：强势上涨"
+                if current_mfi > 70:  # Lower threshold
+                    return "Strong capital inflow: Strong uptrend"
                 else:
-                    return "资金加速流入：看涨信号"
+                    return "Accelerating capital inflow: Bullish signal"
             elif is_strong_downtrend:
-                if current_mfi < 30:  # 提高阈值
-                    return "资金加速流出：看空信号"
+                if current_mfi < 30:  # Higher threshold
+                    return "Accelerating capital outflow: Bearish signal"
                 else:
-                    return "资金持续流出：注意风险"
+                    return "Continuous capital outflow: Risk warning"
             else:
                 if current_mfi > 70 and current_obv_change < -3:
-                    return "资金流出警告：获利回吐"
+                    return "Capital outflow warning: Profit taking"
                 elif current_mfi < 30 and current_obv_change > 3:
-                    return "资金流入信号：低位吸筹"
-                elif current_mfi > 55 and current_obv_change > 2:  # 降低阈值
-                    return "资金持续流入：多头占优"
-                elif current_mfi < 45 and current_obv_change < -2:  # 提高阈值
-                    return "资金逐步流出：空头占优"
-                elif current_price_change > 0.5 and current_volume_change > 10:  # 更敏感的短期判断
-                    return "资金小幅流入：短线看多"
+                    return "Capital inflow signal: Low-level accumulation"
+                elif current_mfi > 55 and current_obv_change > 2:  # Lower threshold
+                    return "Continuous capital inflow: Bulls dominate"
+                elif current_mfi < 45 and current_obv_change < -2:  # Higher threshold
+                    return "Gradual capital outflow: Bears dominate"
+                elif current_price_change > 0.5 and current_volume_change > 10:  # More sensitive short-term judgment
+                    return "Small capital inflow: Short-term bullish"
                 elif current_price_change < -0.5 and current_volume_change > 10:
-                    return "资金小幅流出：短线谨慎"
+                    return "Small capital outflow: Short-term caution"
                 else:
-                    return "资金流向观望：等待信号"
+                    return "Capital flow neutral: Waiting for signals"
             
         except Exception as e:
             logger.error(f"Error in money flow analysis: {str(e)}")
-            return "资金流向分析异常"
+            return "Money flow analysis error"
 
     def backtest_analysis(self, ticker: str, start_date: str, end_date: str):
-        """获取指定日期的分析报告并验证其准确性"""
+        """Get analysis report for specified dates and verify accuracy"""
         try:
             logger.info(f"Attempting to fetch data for {ticker}")
             logger.info(f"Date range: {start_date} to {end_date}")
 
-            # 转换日期为 Pandas 格式
+            # Convert dates to Pandas format
             start_date_pd = pd.to_datetime(start_date)
             end_date_pd = pd.to_datetime(end_date)
 
-            # 获取指定日期范围内的数据
+            # Get data for specified date range
             hist = self.get_stock_data(
                 ticker, 
-                start=start_date_pd - pd.Timedelta(days=7),  # 多取7天用于技术指标计算
-                end=end_date_pd + pd.Timedelta(days=5)      # 确保包含 end_date
+                start=start_date_pd - pd.Timedelta(days=7),  # Get 7 extra days for technical indicators
+                end=end_date_pd + pd.Timedelta(days=5)      # Ensure end_date is included
             )
             
             if hist is None or hist.empty:
                 logger.error(f"No data available for {ticker}")
-                return {"error": "无法获取历史数据"}
+                return {"error": "Unable to get historical data"}
 
-            # 确保索引是datetime类型
+            # Ensure index is datetime type
             hist.index = pd.to_datetime(hist.index)
             
-            # 检查数据范围是否覆盖目标日期
+            # Check if data range covers target dates
             if hist.index[0].date() > start_date_pd.date() or hist.index[-1].date() < end_date_pd.date():
-                logger.error(f"数据范围不足: {hist.index[0]} 至 {hist.index[-1]}")
-                return {"error": "数据未覆盖指定日期范围"}
+                logger.error(f"Insufficient data range: {hist.index[0]} to {hist.index[-1]}")
+                return {"error": "Data does not cover specified date range"}
 
-            # 精确匹配目标日期
+            # Exact target date matching
             target_date = end_date_pd.date()
             matching_dates = hist.index[hist.index.date == target_date]
             
             if len(matching_dates) == 0:
-                logger.error(f"目标日期 {end_date} 不存在于数据中")
-                return {"error": f"{end_date} 无交易数据"}
+                logger.error(f"Target date {end_date} not found in data")
+                return {"error": f"No trading data for {end_date}"}
 
             target_idx = hist.index.get_loc(matching_dates[0])
             
-            # 检查是否有下一个交易日数据
+            # Check for next trading day data
             if target_idx >= len(hist) - 1:
                 logger.error(f"No next day data available for {ticker} at {end_date}")
-                return {"error": f"无法获取 {end_date} 的下一个交易日数据"}
+                return {"error": f"Unable to get next trading day data for {end_date}"}
 
-            # 记录找到的具体日期
+            # Record found dates
             test_date = hist.index[target_idx]
             next_date = hist.index[target_idx + 1]
             logger.info(f"Using test date: {test_date}")
             logger.info(f"Next trading day: {next_date}")
 
-            # 使用目标日期的数据生成分析报告
+            # Generate analysis report using target date data
             test_data = hist.iloc[target_idx:target_idx+1]
             next_day = hist.iloc[target_idx+1]
             analysis_data = hist[:target_idx+1]
 
-            # 生成分析报告
+            # Generate report
             report = {
                 "date": test_data.index[0].strftime('%Y-%m-%d'),
                 "price": test_data['Close'].iloc[0],
                 "change": ((test_data['Close'].iloc[0] - test_data['Open'].iloc[0]) / 
                         test_data['Open'].iloc[0] * 100),
-                "volume": test_data['Volume'].iloc[0] / 1e6,  # 转换为百万单位
+                "volume": test_data['Volume'].iloc[0] / 1e6,  # Convert to millions
                 "technical_signals": self.generate_technical_signals(analysis_data),
                 "volatility_alert": self.volatility_cluster_alert(analysis_data),
                 "money_flow": self.money_flow_analysis(analysis_data),
@@ -401,13 +397,12 @@ class StockAnalyzer:
                 }
             }
 
-            # 添加次日数据
+            # Add next day data
             report["next_day"] = {
                 "date": next_day.name.strftime('%Y-%m-%d'),
                 "price": next_day['Close'],
                 "change": ((next_day['Close'] - next_day['Open']) / next_day['Open'] * 100)
             }
-
 
             return report
 

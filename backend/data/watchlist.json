@@ -1,39 +1,27 @@
 {
-  "默认分组": {
-    "description": "默认分组",
+  "Default Group": {
+    "description": "Default Group",
     "stocks": [],
     "subGroups": {}
   },
-  "观察": {
+  "Watch": {
     "description": null,
     "stocks": [],
     "subGroups": {
-      "中股": {
-        "description": null,
-        "stocks": [
-          "XIACY",
-          "JD",
-          "PDD",
-          "BABA",
-          "BYDDY",
-          "MPNGY",
-          "TCEHY"
-        ]
-      },
-      "美股": {
+      "US Stocks": {
         "description": null,
         "stocks": [
           "UBER",
           "ABNB",
           "NKE",
-          "PLTR",
+          "PLTR", 
           "HOOD",
           "SERV"
         ]
       }
     }
   },
-  "科技股": {
+  "Tech Stocks": {
     "description": null,
     "stocks": [
       "NVDA",
@@ -48,7 +36,7 @@
     ],
     "subGroups": {}
   },
-  "消费": {
+  "Consumption": {
     "description": null,
     "stocks": [
       "LULU",

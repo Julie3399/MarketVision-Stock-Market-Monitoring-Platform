@@ -6,7 +6,7 @@ function App() {
   return (
     <div className="App">
       <header className="App-header">
-        <h1>股票监控分析平台</h1>
+        <h1>Stock Monitoring and Analysis Platform</h1>
       </header>
       <main>
         <StockDashboard />

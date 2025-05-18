@@ -15,85 +15,85 @@ logger = logging.getLogger(__name__)
 
 class GoogleProxyFetcher:
     def __init__(self):
-        # 设置Chrome选项
+        # Set Chrome options
         self.options = Options()
-        self.options.add_argument("--headless")  # 无头模式，不显示浏览器
+        self.options.add_argument("--headless")  # Headless mode, browser not displayed
         self.options.add_argument("--no-sandbox")
         self.options.add_argument("--disable-dev-shm-usage")
         self.options.add_argument("--disable-gpu")
         self.options.add_argument("--window-size=1920,1080")
         
-        # 添加更真实的用户代理
+        # Add more realistic user agent
         self.options.add_argument("user-agent=Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36")
         
-        # 初始化浏览器实例
+        # Initialize browser instance
         self.driver = None
         
     def _initialize_driver(self):
-        """初始化WebDriver"""
+        """Initialize WebDriver"""
         if self.driver is None:
-            logger.info("初始化Chrome WebDriver...")
+            logger.info("Initializing Chrome WebDriver...")
             service = Service(ChromeDriverManager().install())
             self.driver = webdriver.Chrome(service=service, options=self.options)
             
     def _close_driver(self):
-        """关闭WebDriver"""
+        """Close WebDriver"""
         if self.driver is not None:
-            logger.info("关闭Chrome WebDriver...")
+            logger.info("Closing Chrome WebDriver...")
             self.driver.quit()
             self.driver = None
             
     def get_stock_data(self, ticker, period='1y', interval='1d'):
         """
-        通过Google代理获取Yahoo Finance股票数据
+        Get Yahoo Finance stock data through Google proxy
         
-        参数:
-            ticker (str): 股票代码，例如 "AAPL" 或 "9992.HK"
-            period (str): 时间段，例如 "1d", "5d", "1mo", "3mo", "6mo", "1y", "2y", "5y", "max"
-            interval (str): 时间间隔，例如 "1m", "2m", "5m", "15m", "30m", "60m", "1d", "1wk", "1mo"
+        Parameters:
+            ticker (str): Stock code, e.g. "AAPL" or "9992.HK"
+            period (str): Time period, e.g. "1d", "5d", "1mo", "3mo", "6mo", "1y", "2y", "5y", "max"
+            interval (str): Time interval, e.g. "1m", "2m", "5m", "15m", "30m", "60m", "1d", "1wk", "1mo"
             
-        返回:
-            pandas.DataFrame: 包含股票数据的DataFrame
+        Returns:
+            pandas.DataFrame: DataFrame containing stock data
         """
         try:
             self._initialize_driver()
             
-            # 构建Yahoo Finance API URL
+            # Build Yahoo Finance API URL
             yahoo_url = f"https://query1.finance.yahoo.com/v8/finance/chart/{ticker}?interval={interval}&range={period}"
             
-            # 通过Google搜索该URL
+            # Search for URL through Google
             google_url = f"https://www.google.com/search?q={yahoo_url}"
-            logger.info(f"通过Google访问: {google_url}")
+            logger.info(f"Accessing through Google: {google_url}")
             
-            # 访问Google搜索页面
+            # Visit Google search page
             self.driver.get(google_url)
-            time.sleep(2)  # 等待页面加载
+            time.sleep(2)  # Wait for page to load
             
-            # 查找搜索结果中的第一个链接（通常是Yahoo Finance API的直接链接）
+            # Find first link in search results (usually direct link to Yahoo Finance API)
             search_results = self.driver.find_elements(By.CSS_SELECTOR, "div.g a")
             
             if not search_results:
-                logger.warning("未找到搜索结果链接")
-                # 尝试直接在Google中打开Yahoo Finance URL
-                logger.info(f"直接在Google中打开Yahoo Finance URL")
+                logger.warning("No search result links found")
+                # Try opening Yahoo Finance URL directly in Google
+                logger.info(f"Opening Yahoo Finance URL directly in Google")
                 self.driver.get(yahoo_url)
-                time.sleep(3)  # 等待页面加载
+                time.sleep(3)  # Wait for page to load
                 
-                # 获取页面内容
+                # Get page content
                 page_source = self.driver.page_source
                 
-                # 提取JSON数据
+                # Extract JSON data
                 if "chart" in page_source:
-                    # 页面内容可能是JSON或包含JSON的HTML
+                    # Page content might be JSON or HTML containing JSON
                     start_marker = '{"chart":'
                     end_marker = '}'
                     
                     start_idx = page_source.find(start_marker)
                     if start_idx != -1:
-                        # 找到JSON开始位置
+                        # Found JSON start position
                         json_str = page_source[start_idx:]
                         
-                        # 计算嵌套的大括号来找到正确的结束位置
+                        # Calculate nested braces to find correct end position
                         brace_count = 0
                         end_idx = 0
                         
@@ -112,33 +112,33 @@ class GoogleProxyFetcher:
                                 data = json.loads(json_data)
                                 return self._parse_yahoo_data(data)
                             except json.JSONDecodeError as e:
-                                logger.error(f"JSON解析错误: {e}")
+                                logger.error(f"JSON parsing error: {e}")
                     else:
-                        logger.error("页面中未找到JSON数据")
+                        logger.error("No JSON data found in page")
             else:
-                # 点击第一个搜索结果
+                # Click first search result
                 first_link = search_results[0]
                 first_link.click()
-                time.sleep(3)  # 等待页面加载
+                time.sleep(3)  # Wait for page to load
                 
-                # 获取页面内容
+                # Get page content
                 page_source = self.driver.page_source
                 
-                # 提取JSON数据
+                # Extract JSON data
                 try:
-                    # 假设页面内容是纯JSON
+                    # Assume page content is pure JSON
                     data = json.loads(page_source)
                     return self._parse_yahoo_data(data)
                 except json.JSONDecodeError:
-                    # 如果不是纯JSON，尝试从页面中提取JSON
+                    # If not pure JSON, try extracting JSON from page
                     if "chart" in page_source:
                         start_marker = '{"chart":'
                         start_idx = page_source.find(start_marker)
                         if start_idx != -1:
-                            # 找到JSON开始位置
+                            # Found JSON start position
                             json_str = page_source[start_idx:]
                             
-                            # 计算嵌套的大括号来找到正确的结束位置
+                            # Calculate nested braces to find correct end position
                             brace_count = 0
                             end_idx = 0
                             
@@ -157,25 +157,25 @@ class GoogleProxyFetcher:
                                     data = json.loads(json_data)
                                     return self._parse_yahoo_data(data)
                                 except json.JSONDecodeError as e:
-                                    logger.error(f"JSON解析错误: {e}")
+                                    logger.error(f"JSON parsing error: {e}")
             
-            logger.error("无法获取股票数据")
+            logger.error("Unable to get stock data")
             return None
             
         except Exception as e:
-            logger.error(f"获取股票数据时发生错误: {str(e)}")
+            logger.error(f"Error occurred while getting stock data: {str(e)}")
             return None
         finally:
             self._close_driver()
     
     def _parse_yahoo_data(self, data):
-        """解析Yahoo Finance返回的JSON数据"""
+        """Parse JSON data returned from Yahoo Finance"""
         try:
             chart_data = data['chart']['result'][0]
             timestamps = chart_data['timestamp']
             quote = chart_data['indicators']['quote'][0]
             
-            # 创建DataFrame
+            # Create DataFrame
             df = pd.DataFrame({
                 'Open': quote.get('open', []),
                 'High': quote.get('high', []),
@@ -184,15 +184,15 @@ class GoogleProxyFetcher:
                 'Volume': quote.get('volume', [])
             }, index=pd.to_datetime(timestamps, unit='s'))
             
-            # 处理调整后的收盘价
+            # Handle adjusted close price
             if 'adjclose' in chart_data['indicators']:
                 df['Adj Close'] = chart_data['indicators']['adjclose'][0]['adjclose']
             
-            # 清理数据：移除NaN和重复索引
+            # Clean data: remove NaN and duplicate indices
             df = df.dropna().loc[~df.index.duplicated(keep='first')]
             
             return df
             
         except (KeyError, IndexError) as e:
-            logger.error(f"解析数据失败: {str(e)}")
+            logger.error(f"Failed to parse data: {str(e)}")
             return None

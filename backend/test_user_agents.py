@@ -4,7 +4,7 @@ import time
 import random
 from pathlib import Path
 
-# 配置日志
+# Configure logging
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
@@ -16,7 +16,7 @@ logging.basicConfig(
 
 logger = logging.getLogger("user_agent_tester")
 
-# 测试的用户代理列表
+# List of user agents to test
 user_agents = [
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:89.0) Gecko/20100101 Firefox/89.0",
     "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
@@ -28,10 +28,10 @@ user_agents = [
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36 OPR/108.0.0.0"
 ]
 
-# 测试的股票代码
+# Test stock tickers
 test_tickers = ["AAPL", "MSFT", "XIACY"]
 
-# 测试的API端点
+# API endpoints to test
 api_endpoints = [
     "https://query1.finance.yahoo.com/v8/finance/chart/{ticker}",
     "https://query2.finance.yahoo.com/v8/finance/chart/{ticker}",
@@ -40,7 +40,7 @@ api_endpoints = [
 ]
 
 def test_user_agent(user_agent, ticker, endpoint_template):
-    """测试单个用户代理"""
+    """Test a single user agent"""
     headers = {
         "User-Agent": user_agent,
         "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
@@ -67,37 +67,37 @@ def test_user_agent(user_agent, ticker, endpoint_template):
         status_code = response.status_code
         
         if status_code == 200:
-            logger.info(f"成功: {user_agent} - {ticker} - {url} - 状态码: {status_code}")
+            logger.info(f"Success: {user_agent} - {ticker} - {url} - Status Code: {status_code}")
             return True
         else:
-            logger.warning(f"失败: {user_agent} - {ticker} - {url} - 状态码: {status_code}")
+            logger.warning(f"Failed: {user_agent} - {ticker} - {url} - Status Code: {status_code}")
             return False
     except Exception as e:
-        logger.error(f"错误: {user_agent} - {ticker} - {url} - 异常: {str(e)}")
+        logger.error(f"Error: {user_agent} - {ticker} - {url} - Exception: {str(e)}")
         return False
 
 def main():
-    """主测试函数"""
+    """Main test function"""
     results = {}
     
-    # 为每个用户代理创建结果字典
+    # Create results dictionary for each user agent
     for agent in user_agents:
         results[agent] = {"success": 0, "fail": 0, "success_tickers": [], "fail_tickers": []}
     
-    # 测试每个用户代理
+    # Test each user agent
     for agent in user_agents:
-        logger.info(f"测试用户代理: {agent}")
+        logger.info(f"Testing user agent: {agent}")
         
         for ticker in test_tickers:
-            # 随机选择一个API端点
+            # Randomly select an API endpoint
             endpoint = random.choice(api_endpoints)
             
-            # 添加随机延迟，避免被限流
+            # Add random delay to avoid rate limiting
             delay = 2 + random.uniform(1, 3)
-            logger.info(f"等待 {delay:.2f} 秒后请求 {ticker} 数据")
+            logger.info(f"Waiting {delay:.2f} seconds before requesting {ticker} data")
             time.sleep(delay)
             
-            # 测试用户代理
+            # Test the user agent
             success = test_user_agent(agent, ticker, endpoint)
             
             if success:
@@ -107,19 +107,19 @@ def main():
                 results[agent]["fail"] += 1
                 results[agent]["fail_tickers"].append(ticker)
     
-    # 输出结果摘要
-    logger.info("\n===== 测试结果摘要 =====")
+    # Output results summary
+    logger.info("\n===== Test Results Summary =====")
     for agent, result in results.items():
         success_rate = result["success"] / (result["success"] + result["fail"]) * 100 if (result["success"] + result["fail"]) > 0 else 0
-        logger.info(f"用户代理: {agent}")
-        logger.info(f"成功率: {success_rate:.2f}% ({result['success']}/{result['success'] + result['fail']})")
-        logger.info(f"成功股票: {', '.join(result['success_tickers'])}")
-        logger.info(f"失败股票: {', '.join(result['fail_tickers'])}")
+        logger.info(f"User Agent: {agent}")
+        logger.info(f"Success Rate: {success_rate:.2f}% ({result['success']}/{result['success'] + result['fail']})")
+        logger.info(f"Successful Tickers: {', '.join(result['success_tickers'])}")
+        logger.info(f"Failed Tickers: {', '.join(result['fail_tickers'])}")
         logger.info("------------------------")
     
-    # 找出最佳用户代理
+    # Find the best user agent
     best_agent = max(results.items(), key=lambda x: x[1]["success"])
-    logger.info(f"最佳用户代理: {best_agent[0]} (成功率: {best_agent[1]['success'] / (best_agent[1]['success'] + best_agent[1]['fail']) * 100:.2f}%)")
+    logger.info(f"Best User Agent: {best_agent[0]} (Success Rate: {best_agent[1]['success'] / (best_agent[1]['success'] + best_agent[1]['fail']) * 100:.2f}%)")
 
 if __name__ == "__main__":
     main()

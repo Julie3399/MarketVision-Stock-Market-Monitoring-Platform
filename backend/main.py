@@ -18,8 +18,7 @@ from fastapi.responses import JSONResponse
 from fastapi.exceptions import RequestValidationError
 from starlette.exceptions import HTTPException as StarletteHTTPException
 import urllib.parse
-
-# 设置更详细的日志
+# Set up detailed logging
 logging.basicConfig(
     level=logging.DEBUG,
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
@@ -29,16 +28,16 @@ logger = logging.getLogger(__name__)
 
 app = FastAPI(title="Stock Monitor API", debug=True)
 
-# 更新 CORS 配置
+# Update CORS configuration
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],  # 明确指定前端域名
+    allow_origins=["http://localhost:3000"],  # Explicitly specify frontend domain
     allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# 添加错误处理
+# Add error handling
 @app.exception_handler(StarletteHTTPException)
 async def http_exception_handler(request, exc):
     return JSONResponse(
@@ -53,37 +52,37 @@ async def validation_exception_handler(request, exc):
         content={"error": str(exc)}
     )
 
-# 初始化服务
+# Initialize services
 # stock_monitor = StockMonitor()
 # alert_service = AlertService()
 # stock_scanner = StockScanner()
 stock_analyzer = StockAnalyzer()
 
-# 创建数据目录
+# Create data directory
 data_dir = Path(__file__).parent / 'data'
 data_dir.mkdir(exist_ok=True)
 watchlist_file = data_dir / 'watchlist.json'
 
-# 初始化数据
+# Initialize data
 if not watchlist_file.exists():
     initial_data = {
-        "默认分组": {
-            "description": "默认分组",
+        "Default Group": {
+            "description": "Default Group",
             "stocks": ["NVDA", "TSLA", "MARA", "RIOT", "COIN"]
         },
-        "科技股": {
-            "description": "科技类股票",
+        "Technology": {
+            "description": "Technology Stocks",
             "stocks": ["NVDA", "TSLA"]
         },
-        "加密货币相关": {
-            "description": "加密货币相关股票",
+        "Crypto Related": {
+            "description": "Cryptocurrency Related Stocks",
             "stocks": ["MARA", "RIOT", "COIN"]
         }
     }
     watchlist_file.write_text(json.dumps(initial_data, ensure_ascii=False, indent=2))
 
 def load_watchlist():
-    """从文件加载观察列表"""
+    """Load watchlist from file"""
     try:
         return json.loads(watchlist_file.read_text())
     except Exception as e:
@@ -91,33 +90,33 @@ def load_watchlist():
         return {}
 
 def save_watchlist(data):
-    """保存观察列表到文件"""
+    """Save watchlist to file"""
     try:
         watchlist_file.write_text(json.dumps(data, ensure_ascii=False, indent=2))
     except Exception as e:
         logger.error(f"Error saving watchlist: {str(e)}")
         raise
 
-# 修改全局变量
+# Modify global variable
 STOCK_GROUPS = load_watchlist()
 
 class StockAdd(BaseModel):
     symbol: str
-    group: Optional[str] = "默认分组"
+    group: Optional[str] = "Default Group"
 
 @app.post("/api/watchlist/add")
 async def add_to_watchlist(stock: StockAdd, request: Request):
     try:
-        # 记录接收到的原始请求数据
+        # Log received raw request data
         raw_data = await request.json()
         logger.info(f"Received raw request data: {raw_data}")
         logger.info(f"Parsed stock data: {stock}")
         logger.info(f"Adding stock {stock.symbol} to group {stock.group}")
         
-        # 每次添加股票前都重新加载最新的 watchlist 数据
+        # Reload latest watchlist data before adding stock
         current_watchlist = load_watchlist()
         
-        # 确保分组存在
+        # Ensure group exists
         if stock.group not in current_watchlist:
             logger.info(f"Creating new group {stock.group}")
             current_watchlist[stock.group] = {
@@ -126,28 +125,28 @@ async def add_to_watchlist(stock: StockAdd, request: Request):
                 "subGroups": {}
             }
         
-        # 检查股票是否已在分组中
+        # Check if stock already in group
         if stock.symbol not in current_watchlist[stock.group]["stocks"]:
             current_watchlist[stock.group]["stocks"].append(stock.symbol)
             logger.info(f"Added {stock.symbol} to {stock.group}")
             
-            # 保存更改
+            # Save changes
             save_watchlist(current_watchlist)
             
-            # 更新全局变量
+            # Update global variable
             global STOCK_GROUPS
-            STOCK_GROUPS = current_watchlist.copy()  # 使用 copy 来避免引用问题
+            STOCK_GROUPS = current_watchlist.copy()  # Use copy to avoid reference issues
             
             return {
                 "success": True,
-                "message": f"成功添加 {stock.symbol} 到 {stock.group}",
+                "message": f"Successfully added {stock.symbol} to {stock.group}",
                 "groups": current_watchlist
             }
         else:
             logger.info(f"Stock {stock.symbol} already in group {stock.group}")
             return {
                 "success": True,
-                "message": f"股票 {stock.symbol} 已在 {stock.group} 中",
+                "message": f"Stock {stock.symbol} already exists in {stock.group}",
                 "groups": current_watchlist
             }
             
@@ -185,7 +184,7 @@ class StockReorder(BaseModel):
     target_symbol: str
     position: str  # 'before' or 'after'
 
-# 添加新的 Pydantic 模型用于备注
+# Add new Pydantic model for notes
 class StockNote(BaseModel):
     symbol: str
     note: str
@@ -209,10 +208,10 @@ async def root():
 async def get_watchlist():
     logger.info("Fetching watchlist")
     try:
-        # 每次获取 watchlist 时都重新从文件加载
+        # Reload from file every time watchlist is requested
         current_watchlist = load_watchlist()
         global STOCK_GROUPS
-        STOCK_GROUPS = current_watchlist.copy()  # 更新全局变量
+        STOCK_GROUPS = current_watchlist.copy()  # Update global variable
         return {"groups": STOCK_GROUPS}
     except Exception as e:
         logger.error(f"Error in get_watchlist: {str(e)}")
@@ -240,55 +239,55 @@ async def remove_stock(group: str, symbol: str):
     try:
         logger.info(f"Received group: {group}, symbol: {symbol}")
         
-        # 加载当前的 watchlist
+        # Load current watchlist
         watchlist = load_watchlist()
         
-        # 处理嵌套分组路径
+        # Handle nested group paths
         group_parts = group.split('/')
         current_group = watchlist
         
-        # 遍历分组路径
-        for i, part in enumerate(group_parts[:-1]):  # 除了最后一个部分
+        # Traverse group path
+        for i, part in enumerate(group_parts[:-1]):  # Except last part
             if part not in current_group:
-                raise HTTPException(status_code=404, detail=f"分组 {part} 不存在")
+                raise HTTPException(status_code=404, detail=f"Group {part} does not exist")
             if "subGroups" not in current_group[part]:
                 current_group[part]["subGroups"] = {}
             current_group = current_group[part]["subGroups"]
         
-        # 处理最后一个分组
+        # Handle last group
         last_part = group_parts[-1]
         if last_part not in current_group:
-            raise HTTPException(status_code=404, detail=f"分组 {last_part} 不存在")
+            raise HTTPException(status_code=404, detail=f"Group {last_part} does not exist")
         
         if "stocks" not in current_group[last_part]:
             current_group[last_part]["stocks"] = []
         
         if symbol not in current_group[last_part]["stocks"]:
-            raise HTTPException(status_code=404, detail=f"股票 {symbol} 不在分组 {last_part} 中")
+            raise HTTPException(status_code=404, detail=f"Stock {symbol} not in group {last_part}")
         
-        # 从分组中删除股票
+        # Remove stock from group
         current_group[last_part]["stocks"].remove(symbol)
         
-        # 如果分组为空且不是默认分组，则删除该分组
-        if (last_part != "默认分组" and 
+        # Delete group if empty and not default group
+        if (last_part != "Default Group" and 
             len(current_group[last_part]["stocks"]) == 0 and 
             (not current_group[last_part].get("subGroups") or 
              len(current_group[last_part]["subGroups"]) == 0)):
             del current_group[last_part]
         
-        # 保存更改
+        # Save changes
         save_watchlist(watchlist)
         
         return {
             "success": True,
-            "message": f"已从 {group} 中删除 {symbol}",
+            "message": f"Removed {symbol} from {group}",
             "groups": watchlist
         }
         
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"删除股票失败: {str(e)}")
+        logger.error(f"Failed to remove stock: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/api/groups")
@@ -297,7 +296,7 @@ async def add_group(group: StockGroup):
         if group.name in STOCK_GROUPS:
             raise HTTPException(status_code=400, detail="Group already exists")
         STOCK_GROUPS[group.name] = {"description": group.description, "stocks": []}
-        # 保存更改
+        # Save changes
         save_watchlist(STOCK_GROUPS)
         return {"status": "success", "message": f"Added group {group.name}"}
     except Exception as e:
@@ -310,7 +309,7 @@ async def validate_stock(symbol: str):
         hist = ticker.history(period='1d')
         
         if hist.empty:
-            return {"valid": False, "error": "无法获取股票数据"}
+            return {"valid": False, "error": "Unable to fetch stock data"}
             
         info = ticker.info
         return {
@@ -324,14 +323,14 @@ async def validate_stock(symbol: str):
 @app.get("/api/stock/search/{query}")
 async def search_stocks(query: str):
     try:
-        # 添加请求头和延迟
+        # Add headers and delay
         headers = {
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
         }
         
-        # 添加重试机制
+        # Add retry mechanism
         max_retries = 3
-        retry_delay = 1  # 秒
+        retry_delay = 1  # seconds
         
         for attempt in range(max_retries):
             try:
@@ -343,12 +342,12 @@ async def search_stocks(query: str):
                         time.sleep(retry_delay)
                         continue
                     else:
-                        return []  # 达到最大重试次数
+                        return []  # Maximum retries reached
                 
                 response.raise_for_status()
                 data = response.json()
                 
-                # 过滤并格式化结果
+                # Filter and format results
                 suggestions = []
                 for item in data.get('quotes', [])[:10]:
                     if item.get('quoteType') == 'EQUITY':
@@ -368,12 +367,12 @@ async def search_stocks(query: str):
                 
     except Exception as e:
         logger.error(f"Error in stock search: {str(e)}")
-        # 返回空列表而不是抛出错误，这样前端不会崩溃
+        # Return empty list instead of raising error to prevent frontend crash
         return []
 
 @app.get("/api/stock/analysis/{symbol}")
 async def analyze_stock(symbol: str):
-    """获取股票分析报告"""
+    """Get stock analysis report"""
     try:
         report = stock_analyzer.generate_daily_report(symbol)
         return report
@@ -383,7 +382,7 @@ async def analyze_stock(symbol: str):
 
 @app.get("/api/stock/backtest/{symbol}")
 async def backtest_stock(symbol: str, start_date: str, end_date: str):
-    """获取股票回测分析结果"""
+    """Get stock backtest analysis results"""
     try:
         logger.info(f"Starting backtest for {symbol} from {start_date} to {end_date}")
         results = stock_analyzer.backtest_analysis(symbol, start_date, end_date)
@@ -402,124 +401,124 @@ async def move_stock(move: StockMove):
     try:
         logger.info(f"Moving stock {move.symbol} from {move.from_group} to {move.to_group}")
         
-        # 加载当前的 watchlist
+        # Load current watchlist
         watchlist = load_watchlist()
         
-        # 处理源分组路径
+        # Handle source group path
         from_parts = move.from_group.split('/')
         current_from = watchlist
         
-        # 遍历源分组路径
+        # Traverse source group path
         for i, part in enumerate(from_parts[:-1]):
             if part not in current_from:
-                raise HTTPException(status_code=404, detail=f"源分组 {part} 不存在")
+                raise HTTPException(status_code=404, detail=f"Source group {part} does not exist")
             if "subGroups" not in current_from[part]:
-                raise HTTPException(status_code=404, detail=f"源分组 {part} 没有子分组")
+                raise HTTPException(status_code=404, detail=f"Source group {part} has no subgroups")
             current_from = current_from[part]["subGroups"]
             
-        # 检查最后一个源分组
+        # Check last source group
         last_from = from_parts[-1]
         if last_from not in current_from:
-            raise HTTPException(status_code=404, detail=f"源分组 {last_from} 不存在")
+            raise HTTPException(status_code=404, detail=f"Source group {last_from} does not exist")
             
-        # 检查股票是否在源分组中
+        # Check if stock is in source group
         if move.symbol not in current_from[last_from]["stocks"]:
-            raise HTTPException(status_code=404, detail=f"股票 {move.symbol} 不在分组 {last_from} 中")
+            raise HTTPException(status_code=404, detail=f"Stock {move.symbol} not in group {last_from}")
             
-        # 处理目标分组路径
+        # Handle target group path
         to_parts = move.to_group.split('/')
         current_to = watchlist
         
-        # 遍历目标分组路径
+        # Traverse target group path
         for i, part in enumerate(to_parts[:-1]):
             if part not in current_to:
-                raise HTTPException(status_code=404, detail=f"目标分组 {part} 不存在")
+                raise HTTPException(status_code=404, detail=f"Target group {part} does not exist")
             if "subGroups" not in current_to[part]:
                 current_to[part]["subGroups"] = {}
             current_to = current_to[part]["subGroups"]
             
-        # 检查最后一个目标分组
+        # Check last target group
         last_to = to_parts[-1]
         if last_to not in current_to:
-            raise HTTPException(status_code=404, detail=f"目标分组 {last_to} 不存在")
+            raise HTTPException(status_code=404, detail=f"Target group {last_to} does not exist")
             
-        # 确保目标分组有 stocks 数组
+        # Ensure target group has stocks array
         if "stocks" not in current_to[last_to]:
             current_to[last_to]["stocks"] = []
             
-        # 从源分组中移除股票
+        # Remove stock from source group
         current_from[last_from]["stocks"].remove(move.symbol)
         
-        # 添加到目标分组
+        # Add to target group
         if move.symbol not in current_to[last_to]["stocks"]:
             current_to[last_to]["stocks"].append(move.symbol)
             
-        # 如果源分组为空且不是默认分组，则删除该分组
-        if (last_from != "默认分组" and 
+        # Delete source group if empty and not default group
+        if (last_from != "Default Group" and 
             len(current_from[last_from]["stocks"]) == 0 and 
             (not current_from[last_from].get("subGroups") or 
              len(current_from[last_from]["subGroups"]) == 0)):
             del current_from[last_from]
             
-        # 保存更改
+        # Save changes
         save_watchlist(watchlist)
         
         return {
             "success": True,
-            "message": f"已将 {move.symbol} 从 {move.from_group} 移动到 {move.to_group}",
+            "message": f"Moved {move.symbol} from {move.from_group} to {move.to_group}",
             "groups": watchlist
         }
         
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"移动股票失败: {str(e)}")
+        logger.error(f"Failed to move stock: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
-
+    
 @app.post("/api/groups/move")
 async def move_group(move: GroupMove):
     try:
         logger.info(f"Moving group {move.source_group} to {move.target_group}")
         
-        # 加载当前的 watchlist
+        # Load current watchlist
         watchlist = load_watchlist()
         
-        # 检查源分组是否存在
+        # Check if source group exists
         if move.source_group not in watchlist:
-            raise HTTPException(status_code=404, detail=f"源分组 {move.source_group} 不存在")
+            raise HTTPException(status_code=404, detail=f"Source group {move.source_group} does not exist")
             
-        # 获取要移动的分组数据
+        # Get group data to move
         moving_group = watchlist[move.source_group]
         
-        # 如果目标路径为空，表示移动到顶层
+        # If target path is empty, move to top level
         if not move.target_group:
-            # 直接添加到顶层
+            # Add directly to top level
             watchlist[move.source_group] = moving_group
         else:
-            # 检查目标分组是否存在
+            # Check if target group exists
             if move.target_group not in watchlist:
-                raise HTTPException(status_code=404, detail=f"目标分组 {move.target_group} 不存在")
+                raise HTTPException(status_code=404, detail=f"Target group {move.target_group} does not exist")
                 
-            # 确保目标分组有 subGroups 字段
+            # Ensure target group has subGroups field
             if 'subGroups' not in watchlist[move.target_group]:
                 watchlist[move.target_group]['subGroups'] = {}
                 
-            # 将分组移动到目标位置
+            # Move group to target position
             watchlist[move.target_group]['subGroups'][move.source_group] = moving_group
             
-            # 从原位置删除
+            # Delete from original position
             del watchlist[move.source_group]
         
-        # 保存更改
+        # Save changes
         save_watchlist(watchlist)
         
-        # 更新全局变量
+        # Update global variable
         global STOCK_GROUPS
         STOCK_GROUPS = watchlist
         
         return {
             "status": "success",
-            "message": f"已移动分组 {move.source_group}",
+            "message": f"Successfully moved group {move.source_group}",
             "groups": watchlist
         }
         
@@ -532,35 +531,35 @@ async def move_group(move: GroupMove):
 @app.delete("/api/groups/{group_path}")
 async def delete_group(group_path: str):
     try:
-        # 分割路径，处理嵌套的情况
+        # Split path for nested cases
         path_parts = group_path.split('/')
         
-        if path_parts[0] == "默认分组":
-            raise HTTPException(status_code=400, detail="不能删除默认分组")
+        if path_parts[0] == "Default Group":
+            raise HTTPException(status_code=400, detail="Cannot delete Default Group")
         
-        # 递归查找要删除的分组
+        # Recursively find group to delete
         current_groups = STOCK_GROUPS
         parent_groups = None
         target_group_name = None
         
         for i, part in enumerate(path_parts):
             if part not in current_groups:
-                raise HTTPException(status_code=404, detail=f"分组 {part} 不存在")
+                raise HTTPException(status_code=404, detail=f"Group {part} does not exist")
             
-            if i == len(path_parts) - 1:  # 最后一个部分
+            if i == len(path_parts) - 1:  # Last part
                 parent_groups = current_groups
                 target_group_name = part
             else:
                 current_groups = current_groups[part].get('subGroups', {})
         
         if not parent_groups or not target_group_name:
-            raise HTTPException(status_code=404, detail="找不到目标分组")
+            raise HTTPException(status_code=404, detail="Target group not found")
             
-        # 将该分组的股票移动到默认分组
+        # Move stocks to Default Group
         group_to_delete = parent_groups[target_group_name]
-        default_stocks = set(STOCK_GROUPS["默认分组"]["stocks"])
+        default_stocks = set(STOCK_GROUPS["Default Group"]["stocks"])
         
-        # 递归收集所有子分组中的股票
+        # Recursively collect stocks from all subgroups
         def collect_stocks(group):
             stocks = set(group.get("stocks", []))
             for subgroup in group.get("subGroups", {}).values():
@@ -568,14 +567,14 @@ async def delete_group(group_path: str):
             return stocks
         
         all_stocks = collect_stocks(group_to_delete)
-        STOCK_GROUPS["默认分组"]["stocks"] = list(default_stocks | all_stocks)
+        STOCK_GROUPS["Default Group"]["stocks"] = list(default_stocks | all_stocks)
         
-        # 删除分组
+        # Delete group
         del parent_groups[target_group_name]
         
-        # 保存更改
+        # Save changes
         save_watchlist(STOCK_GROUPS)
-        return {"status": "success", "message": f"已删除分组 {group_path}"}
+        return {"status": "success", "message": f"Successfully deleted group {group_path}"}
         
     except HTTPException:
         raise
@@ -586,26 +585,26 @@ async def delete_group(group_path: str):
 @app.put("/api/groups/rename")
 async def rename_group(rename: GroupRename):
     try:
-        # 解码路径
+        # Decode path
         old_path = urllib.parse.unquote(rename.old_path)
         
-        if old_path == "默认分组":
-            raise HTTPException(status_code=400, detail="不能重命名默认分组")
+        if old_path == "Default Group":
+            raise HTTPException(status_code=400, detail="Cannot rename Default Group")
             
-        # 查找要重命名的分组
+        # Find group to rename
         if old_path not in STOCK_GROUPS:
-            raise HTTPException(status_code=404, detail=f"分组 {old_path} 不存在")
+            raise HTTPException(status_code=404, detail=f"Group {old_path} does not exist")
             
-        # 检查新名称是否已存在
+        # Check if new name already exists
         if rename.new_name in STOCK_GROUPS:
-            raise HTTPException(status_code=400, detail=f"分组名称 {rename.new_name} 已存在")
+            raise HTTPException(status_code=400, detail=f"Group name {rename.new_name} already exists")
             
-        # 重命名分组
+        # Rename group
         STOCK_GROUPS[rename.new_name] = STOCK_GROUPS.pop(old_path)
         
-        # 保存更改
+        # Save changes
         save_watchlist(STOCK_GROUPS)
-        return {"status": "success", "message": f"已将分组 {old_path} 重命名为 {rename.new_name}"}
+        return {"status": "success", "message": f"Successfully renamed group {old_path} to {rename.new_name}"}
         
     except HTTPException:
         raise
@@ -618,44 +617,44 @@ async def reorder_groups(reorder: GroupReorder):
     try:
         logger.info(f"Reordering group {reorder.source_group} {reorder.position} {reorder.target_group}")
         
-        # 加载当前的 watchlist
+        # Load current watchlist
         watchlist = load_watchlist()
         
-        # 检查源分组和目标分组是否存在
+        # Check if source and target groups exist
         if reorder.source_group not in watchlist:
-            raise HTTPException(status_code=404, detail=f"源分组 {reorder.source_group} 不存在")
+            raise HTTPException(status_code=404, detail=f"Source group {reorder.source_group} does not exist")
         if reorder.target_group not in watchlist:
-            raise HTTPException(status_code=404, detail=f"目标分组 {reorder.target_group} 不存在")
+            raise HTTPException(status_code=404, detail=f"Target group {reorder.target_group} does not exist")
             
-        # 获取所有分组的列表
+        # Get list of all groups
         groups = list(watchlist.keys())
         
-        # 找到源分组和目标分组的位置
+        # Find positions of source and target groups
         source_index = groups.index(reorder.source_group)
         target_index = groups.index(reorder.target_group)
         
-        # 从列表中移除源分组
+        # Remove source group from list
         groups.pop(source_index)
         
-        # 根据位置重新插入源分组
+        # Reinsert source group based on position
         new_index = target_index if reorder.position == 'before' else target_index + 1
         groups.insert(new_index, reorder.source_group)
         
-        # 创建新的有序字典
+        # Create new ordered dictionary
         new_watchlist = {}
         for group in groups:
             new_watchlist[group] = watchlist[group]
             
-        # 保存更改
+        # Save changes
         save_watchlist(new_watchlist)
         
-        # 更新全局变量
+        # Update global variable
         global STOCK_GROUPS
         STOCK_GROUPS = new_watchlist
         
         return {
             "status": "success",
-            "message": f"已重新排序分组 {reorder.source_group}",
+            "message": f"Successfully reordered group {reorder.source_group}",
             "groups": new_watchlist
         }
         
@@ -670,52 +669,52 @@ async def reorder_stocks(reorder: StockReorder):
     try:
         logger.info(f"Reordering stock {reorder.source_symbol} {reorder.position} {reorder.target_symbol} in group {reorder.group}")
         
-        # 加载当前的 watchlist
+        # Load current watchlist
         watchlist = load_watchlist()
         
-        # 处理嵌套分组路径
+        # Handle nested group paths
         group_parts = reorder.group.split('/')
         current_group = watchlist
         
-        # 遍历分组路径
-        for i, part in enumerate(group_parts[:-1]):  # 除了最后一个部分
+        # Traverse group path
+        for i, part in enumerate(group_parts[:-1]):  # Except last part
             if part not in current_group:
-                raise HTTPException(status_code=404, detail=f"分组 {part} 不存在")
+                raise HTTPException(status_code=404, detail=f"Group {part} does not exist")
             current_group = current_group[part]["subGroups"]
             
-        # 检查最后一个分组
+        # Check last group
         last_part = group_parts[-1]
         if last_part not in current_group:
-            raise HTTPException(status_code=404, detail=f"分组 {last_part} 不存在")
+            raise HTTPException(status_code=404, detail=f"Group {last_part} does not exist")
             
         group_data = current_group[last_part]
         
-        # 检查源股票和目标股票是否存在
+        # Check if source and target stocks exist
         if reorder.source_symbol not in group_data["stocks"]:
-            raise HTTPException(status_code=404, detail=f"股票 {reorder.source_symbol} 不在分组中")
+            raise HTTPException(status_code=404, detail=f"Stock {reorder.source_symbol} not in group")
         if reorder.target_symbol not in group_data["stocks"]:
-            raise HTTPException(status_code=404, detail=f"目标股票 {reorder.target_symbol} 不在分组中")
+            raise HTTPException(status_code=404, detail=f"Target stock {reorder.target_symbol} not in group")
             
-        # 获取股票列表
+        # Get stock list
         stocks = group_data["stocks"]
         
-        # 移除源股票
+        # Remove source stock
         stocks.remove(reorder.source_symbol)
         
-        # 获取目标位置
+        # Get target position
         target_index = stocks.index(reorder.target_symbol)
         
-        # 根据位置重新插入源股票
+        # Reinsert source stock based on position
         if reorder.position == 'after':
             target_index += 1
         stocks.insert(target_index, reorder.source_symbol)
         
-        # 保存更改
+        # Save changes
         save_watchlist(watchlist)
         
         return {
             "success": True,
-            "message": f"已重新排序股票 {reorder.source_symbol}",
+            "message": f"Successfully reordered stock {reorder.source_symbol}",
             "groups": watchlist
         }
         
@@ -727,9 +726,9 @@ async def reorder_stocks(reorder: StockReorder):
 
 @app.get("/api/stock/note/{symbol}")
 async def get_stock_note(symbol: str):
-    """获取股票备注"""
+    """Get stock note"""
     try:
-        # 从文件加载备注数据
+        # Load note data from file
         notes_file = data_dir / 'stock_notes.json'
         if not notes_file.exists():
             return {"note": ""}
@@ -744,25 +743,25 @@ async def get_stock_note(symbol: str):
 
 @app.post("/api/stock/note")
 async def update_stock_note(note: StockNote):
-    """更新股票备注"""
+    """Update stock note"""
     try:
         notes_file = data_dir / 'stock_notes.json'
         
-        # 加载现有备注
+        # Load existing notes
         if notes_file.exists():
             with open(notes_file, 'r', encoding='utf-8') as f:
                 notes = json.load(f)
         else:
             notes = {}
             
-        # 更新备注
+        # Update note
         notes[note.symbol] = note.note
         
-        # 保存更新后的备注
+        # Save updated notes
         with open(notes_file, 'w', encoding='utf-8') as f:
             json.dump(notes, f, ensure_ascii=False, indent=2)
             
-        return {"success": True, "message": "备注已更新"}
+        return {"success": True, "message": "Note updated successfully"}
     except Exception as e:
         logger.error(f"Error updating note: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))

@@ -12,8 +12,8 @@ class AlertService:
         }
     
     def send_email_alert(self, symbol: str, alert_type: str, data: Dict):
-        msg = MIMEText(f"股票 {symbol} 触发 {alert_type} 预警\n详细数据: {str(data)}")
-        msg['Subject'] = f"股票预警 - {symbol}"
+        msg = MIMEText(f"Stock {symbol} triggered {alert_type} alert\nDetailed data: {str(data)}")
+        msg['Subject'] = f"Stock Alert - {symbol}"
         msg['From'] = self.email_config['username']
         msg['To'] = self.email_config['username']
         

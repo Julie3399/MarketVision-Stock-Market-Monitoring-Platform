@@ -9,7 +9,7 @@ interface FolderOperationsProps {
 
 export const FolderOperations: React.FC<FolderOperationsProps> = ({ onUndo, style }) => {
   return (
-    <Tooltip title="撤回上一次操作">
+    <Tooltip title="Undo last equity distribution or financing operation">
       <Button
         type="link"
         icon={<UndoOutlined />}
@@ -17,9 +17,10 @@ export const FolderOperations: React.FC<FolderOperationsProps> = ({ onUndo, styl
         onClick={onUndo}
         style={{
           padding: '4px 8px',
+          color: '#1890ff',
           ...style
         }}
       />
     </Tooltip>
   );
-}; 
+};

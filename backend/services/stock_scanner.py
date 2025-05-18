@@ -8,13 +8,13 @@ from bs4 import BeautifulSoup
 
 class StockScanner:
     def __init__(self):
-        self.market_cap_threshold = 5_000_000_000  # 50亿美元
+        self.market_cap_threshold = 5_000_000_000  # 5 billion USD
         self.volume_surge_threshold = 300  # 300%
         self.institutional_ownership_threshold = 5.0  # 5%
         
     def scan_market(self) -> List[Dict]:
-        """扫描整个市场寻找符合条件的股票"""
-        # 获取纳斯达克所有股票列表（示例使用部分股票）
+        """Scan the entire market for stocks meeting the criteria"""
+        # Get list of NASDAQ stocks (example using subset)
         symbols = ["AAPL", "MSFT", "NVDA", "AMD", "TSLA", "MARA", "RIOT", "COIN"]
         results = []
         
@@ -30,15 +30,15 @@ class StockScanner:
         return results
     
     def analyze_stock(self, symbol: str) -> Dict:
-        """分析单个股票的所有相关数据"""
+        """Analyze all relevant data for a single stock"""
         stock = yf.Ticker(symbol)
         
-        # 获取历史数据
-        hist = stock.history(period='60d')  # 获取60天数据用于计算均值
+        # Get historical data
+        hist = stock.history(period='60d')  # Get 60 days of data for average calculation
         if hist.empty:
             return None
             
-        # 获取公司信息
+        # Get company info
         info = stock.info
         
         return {
@@ -55,7 +55,7 @@ class StockScanner:
         }
     
     def check_conditions(self, stock_data: Dict) -> bool:
-        """检查股票是否满足所有条件"""
+        """Check if stock meets all conditions"""
         conditions = {
             'volume_surge': self.check_volume_surge(stock_data),
             'not_trending': self.check_not_trending(stock_data['symbol']),
@@ -67,48 +67,48 @@ class StockScanner:
         return all(conditions.values())
     
     def check_volume_surge(self, stock_data: Dict) -> bool:
-        """检查成交量是否突增300%以上"""
+        """Check if volume has surged over 300%"""
         volume_ratio = (stock_data['current_volume'] / stock_data['avg_volume_30d']) * 100
         return volume_ratio > self.volume_surge_threshold
     
     def check_not_trending(self, symbol: str) -> bool:
-        """检查是否未进入热门榜（这里可以根据实际数据源调整）"""
-        # 示例实现，实际应该查询热门股票榜单
+        """Check if stock is not on trending list (can be adjusted based on data source)"""
+        # Example implementation, should query actual trending stocks list
         trending_symbols = self.get_trending_stocks()
         return symbol not in trending_symbols
     
     def get_trending_stocks(self) -> List[str]:
-        """获取热门股票列表（示例实现）"""
-        # 实际实现应该从可靠数据源获取
-        return ["AAPL", "MSFT", "GOOGL"]  # 示例热门股票
+        """Get list of trending stocks (example implementation)"""
+        # Actual implementation should get from reliable data source
+        return ["AAPL", "MSFT", "GOOGL"]  # Example trending stocks
     
     def check_institutional_ownership(self, stock_data: Dict) -> bool:
-        """检查机构持股比例是否小于阈值"""
+        """Check if institutional ownership is below threshold"""
         return stock_data['institutional_ownership'] < self.institutional_ownership_threshold
     
     def get_institutional_ownership(self, symbol: str) -> float:
-        """获取机构持股比例"""
+        """Get institutional ownership percentage"""
         try:
             stock = yf.Ticker(symbol)
-            # 实际应该从更可靠的数据源获取
+            # Should get from more reliable data source
             return stock.info.get('institutionalOwnership', 0) * 100
         except:
             return 0
     
     def check_market_cap(self, stock_data: Dict) -> bool:
-        """检查是否为小市值股票"""
+        """Check if stock is small cap"""
         return stock_data['market_cap'] < self.market_cap_threshold
     
     def check_technical_breakout(self, stock_data: Dict) -> bool:
-        """检查技术面是否突破"""
+        """Check for technical breakout"""
         hist = stock_data['history']
         
-        # 计算技术指标
-        # 1. 突破20日均线
+        # Calculate technical indicators
+        # 1. Break above 20-day moving average
         ma20 = hist['Close'].rolling(window=20).mean()
         price_above_ma = hist['Close'][-1] > ma20[-1]
         
-        # 2. RSI指标
+        # 2. RSI indicator
         delta = hist['Close'].diff()
         gain = (delta.where(delta > 0, 0)).rolling(window=14).mean()
         loss = (-delta.where(delta < 0, 0)).rolling(window=14).mean()
@@ -116,13 +116,13 @@ class StockScanner:
         rsi = 100 - (100 / (1 + rs))
         rsi_bullish = rsi[-1] > 50 and rsi[-1] < 70
         
-        # 3. 成交量确认
+        # 3. Volume confirmation
         volume_confirmation = hist['Volume'][-1] > hist['Volume'][-20:].mean()
         
         return price_above_ma and rsi_bullish and volume_confirmation
     
     def generate_report(self, stock_data: Dict) -> Dict:
-        """生成异动分析报告"""
+        """Generate movement analysis report"""
         return {
             'symbol': stock_data['symbol'],
             'market_cap': stock_data['market_cap'],
@@ -139,16 +139,16 @@ class StockScanner:
         }
     
     def get_technical_analysis(self, stock_data: Dict) -> Dict:
-        """获取技术面分析"""
+        """Get technical analysis"""
         hist = stock_data['history']
         return {
-            'ma_analysis': '突破20日均线' if self.check_technical_breakout(stock_data) else '未突破',
-            'volume_analysis': f"成交量较30日均值增加{((stock_data['current_volume']/stock_data['avg_volume_30d'])-1)*100:.2f}%",
-            'price_momentum': '上升趋势' if stock_data['price_change'] > 0 else '下降趋势'
+            'ma_analysis': 'Broke above 20-day MA' if self.check_technical_breakout(stock_data) else 'No breakout',
+            'volume_analysis': f"Volume increased {((stock_data['current_volume']/stock_data['avg_volume_30d'])-1)*100:.2f}% vs 30-day average",
+            'price_momentum': 'Uptrend' if stock_data['price_change'] > 0 else 'Downtrend'
         }
     
     def get_fundamental_analysis(self, stock_data: Dict) -> Dict:
-        """获取基本面分析"""
+        """Get fundamental analysis"""
         info = stock_data['info']
         return {
             'market_cap': f"${stock_data['market_cap']/1000000000:.2f}B",
@@ -157,23 +157,23 @@ class StockScanner:
         }
     
     def get_related_news(self, symbol: str) -> List[Dict]:
-        """获取相关新闻（示例实现）"""
-        # 实际实现应该从新闻API获取
+        """Get related news (example implementation)"""
+        # Actual implementation should use news API
         return [
             {
-                'title': f'示例新闻 - {symbol}出现异动',
-                'source': '示例新闻源',
+                'title': f'Example News - {symbol} shows unusual activity',
+                'source': 'Example News Source',
                 'timestamp': datetime.now().isoformat()
             }
         ]
     
     def get_alerts(self, stock_data: Dict) -> List[str]:
-        """生成警报信息"""
+        """Generate alert messages"""
         alerts = []
         if self.check_volume_surge(stock_data):
-            alerts.append(f"成交量突增{((stock_data['current_volume']/stock_data['avg_volume_30d'])-1)*100:.2f}%")
+            alerts.append(f"Volume surged {((stock_data['current_volume']/stock_data['avg_volume_30d'])-1)*100:.2f}%")
         if self.check_technical_breakout(stock_data):
-            alerts.append("技术面突破")
+            alerts.append("Technical breakout detected")
         if stock_data['institutional_ownership'] < self.institutional_ownership_threshold:
-            alerts.append(f"机构持股较低({stock_data['institutional_ownership']:.2f}%)")
-        return alerts 
+            alerts.append(f"Low institutional ownership ({stock_data['institutional_ownership']:.2f}%)")
+        return alerts

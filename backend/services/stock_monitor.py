@@ -14,12 +14,12 @@ class StockMonitor:
             'rapid_rise': 3.0,    # 3%
             'volume_surge': 300   # 300%
         }
-        self.alerts_history = {}  # 用于存储已触发的预警，避免重复通知
-        # 添加缓存，数据在60秒内有效
+        self.alerts_history = {}  # Store triggered alerts to avoid duplicate notifications
+        # Add cache, data valid for 60 seconds
         self.data_cache = TTLCache(maxsize=100, ttl=60)
         
     def get_stock_data(self, symbol: str) -> Dict:
-        """获取股票数据，使用缓存"""
+        """Get stock data with cache"""
         cache_key = f"{symbol}_{datetime.now().strftime('%Y%m%d_%H%M')}"
         
         if cache_key in self.data_cache:
@@ -35,11 +35,11 @@ class StockMonitor:
         return data
         
     def check_alerts(self, symbol: str) -> Dict:
-        """检查所有预警条件"""
+        """Check all alert conditions"""
         try:
             current_time = datetime.now()
             
-            # 使用缓存获取数据
+            # Get data using cache
             data = self.get_stock_data(symbol)
             hist = data['hist']
             daily_data = data['daily_data']
@@ -53,39 +53,39 @@ class StockMonitor:
             
             alerts = []
             
-            # 1. 检查单日涨幅
+            # 1. Check daily price change
             daily_change = ((hist['Close'][-1] - hist['Open'][0]) / hist['Open'][0]) * 100
             if daily_change > self.alert_thresholds['daily_change']:
                 alerts.append({
                     'type': 'daily_surge',
-                    'message': f'单日涨幅达到 {daily_change:.2f}%',
+                    'message': f'Daily increase reached {daily_change:.2f}%',
                     'value': daily_change,
                     'threshold': self.alert_thresholds['daily_change']
                 })
             
-            # 2. 检查15分钟急涨
+            # 2. Check 15-minute rapid rise
             if len(hist) >= 2:
                 fifteen_min_change = ((hist['Close'][-1] - hist['Close'][-2]) / hist['Close'][-2]) * 100
                 if fifteen_min_change > self.alert_thresholds['rapid_rise']:
                     alerts.append({
                         'type': 'rapid_rise',
-                        'message': f'15分钟涨幅达到 {fifteen_min_change:.2f}%',
+                        'message': f'15-minute increase reached {fifteen_min_change:.2f}%',
                         'value': fifteen_min_change,
                         'threshold': self.alert_thresholds['rapid_rise']
                     })
             
-            # 3. 检查52周新高
+            # 3. Check 52-week high
             fifty_two_week_high = daily_data['High'].max()
             current_price = hist['Close'][-1]
             if current_price >= fifty_two_week_high:
                 alerts.append({
                     'type': 'new_high',
-                    'message': f'突破52周新高: {current_price:.2f}',
+                    'message': f'Broke 52-week high: {current_price:.2f}',
                     'value': current_price,
                     'threshold': fifty_two_week_high
                 })
             
-            # 更新预警历史
+            # Update alert history
             alert_key = f"{symbol}_{current_time.strftime('%Y%m%d_%H%M')}"
             if alerts and alert_key not in self.alerts_history:
                 self.alerts_history[alert_key] = alerts
@@ -102,4 +102,4 @@ class StockMonitor:
                 'alerts': [],
                 'timestamp': current_time.isoformat(),
                 'error': str(e)
-            } 
+            }

@@ -15,8 +15,7 @@ interface StockSuggestion {
   exchange: string;
   logo?: string;
 }
-
-// 使用普通的 CSS 类和内联样式替代 styled-components
+// Use regular CSS classes and inline styles instead of styled-components
 const styles = {
   suggestionItem: {
     display: 'flex',
@@ -94,18 +93,18 @@ export const StockSearch: React.FC<StockSearchProps> = ({ onSelect, style }) => 
         if (!response.ok) {
           const errorText = await response.text();
           console.error('Error response:', errorText);
-          throw new Error(`搜索请求失败: ${response.status} ${errorText}`);
+          throw new Error(`Search request failed: ${response.status} ${errorText}`);
         }
 
         const suggestions: StockSuggestion[] = await response.json();
         console.log('Search results:', suggestions);
         formatAndSetOptions(suggestions);
       } catch (error) {
-        console.error('搜索股票失败:', error);
+        console.error('Failed to search stocks:', error);
         if (error instanceof TypeError && error.message === 'Failed to fetch') {
-          message.error('无法连接到服务器，请确保后端服务正在运行');
+          message.error('Unable to connect to server, please ensure the backend service is running');
         } else {
-          message.error('搜索失败: ' + (error instanceof Error ? error.message : String(error)));
+          message.error('Search failed: ' + (error instanceof Error ? error.message : String(error)));
         }
         setOptions([]);
       } finally {
@@ -127,38 +126,38 @@ export const StockSearch: React.FC<StockSearchProps> = ({ onSelect, style }) => 
           padding: '8px 12px', 
           width: '100%' 
         }}>
-          {/* 左侧内容：股票代码和公司名称（垂直布局） */}
+          {/* Left content: stock code and company name (vertical layout) */}
           <div style={{ 
             display: 'flex', 
             flexDirection: 'column', 
             gap: '4px', 
-            flex: 1, // 关键：占据剩余空间
-            overflow: 'hidden' // 防止内容溢出
+            flex: 1, // Key: occupy remaining space
+            overflow: 'hidden' // Prevent content overflow
           }}>
             <span style={{ 
             display: 'flex', 
             alignItems: 'center', 
             gap: '8px',
-            minWidth: '120px', // 关键：固定最小宽度
-            marginLeft: '12px', // 与左侧内容保持间距
-            flexShrink: 0 // 禁止挤压
+            minWidth: '120px', // Key: fixed minimum width
+            marginLeft: '12px', // Keep spacing with left content
+            flexShrink: 0 // Prevent compression
           }}>{item.symbol}</span>
             <span style={{ 
               color: '#666', 
-              wordBreak: 'break-word' // 允许长名称换行
+              wordBreak: 'break-word' // Allow long names to wrap
             }}>
               {item.name}
             </span>
           </div>
   
-          {/* 右侧内容：交易所代码和加号图标 */}
+          {/* Right content: exchange code and plus icon */}
           <div style={{ 
             display: 'flex', 
             alignItems: 'center', 
             gap: '8px',
-            minWidth: '120px', // 关键：固定最小宽度
-            marginLeft: '12px', // 与左侧内容保持间距
-            flexShrink: 0 // 禁止挤压
+            minWidth: '120px', // Key: fixed minimum width
+            marginLeft: '12px', // Keep spacing with left content
+            flexShrink: 0 // Prevent compression
           }}>
             <span style={{ fontSize: '12px', color: '#888' }}>
               {item.exchange}
@@ -168,7 +167,7 @@ export const StockSearch: React.FC<StockSearchProps> = ({ onSelect, style }) => 
                 cursor: 'pointer', 
                 opacity: 0.6, 
                 fontSize: '20px',
-                flexShrink: 0 // 图标禁止挤压
+                flexShrink: 0 // Prevent icon compression
               }}
               onMouseEnter={(e) => (e.currentTarget.style.opacity = '1')}
               onMouseLeave={(e) => (e.currentTarget.style.opacity = '0.6')}
@@ -186,16 +185,16 @@ export const StockSearch: React.FC<StockSearchProps> = ({ onSelect, style }) => 
 
   const handleAddStock = async (symbol: string) => {
     try {
-      console.log('开始添加股票:', symbol);
+      console.log('Starting to add stock:', symbol);
       
-      // 首先检查股票是否已经存在于任何分组中
+      // First check if the stock already exists in any group
       const watchlistResponse = await fetch(`${process.env.REACT_APP_API_URL}/api/watchlist`);
       if (!watchlistResponse.ok) {
-        throw new Error('获取观察列表失败');
+        throw new Error('Failed to get watchlist');
       }
       const watchlistData = await watchlistResponse.json();
       
-      // 检查股票是否已存在于任何分组
+      // Check if stock exists in any group
       let existingGroup = null;
       Object.entries(watchlistData.groups).forEach(([groupName, group]: [string, any]) => {
         if (group.stocks.includes(symbol)) {
@@ -204,16 +203,16 @@ export const StockSearch: React.FC<StockSearchProps> = ({ onSelect, style }) => 
       });
       
       if (existingGroup) {
-        message.warning(`股票 ${symbol} 已存在于分组 "${existingGroup}" 中`);
+        message.warning(`Stock ${symbol} already exists in group "${existingGroup}"`);
         return;
       }
       
       const requestBody = {
         symbol: symbol,
-        group: '默认分组'
+        group: 'Default Group'
       };
       
-      console.log('发送请求体:', requestBody);
+      console.log('Sending request body:', requestBody);
       
       const response = await fetch(`${process.env.REACT_APP_API_URL}/api/watchlist/add`, {
         method: 'POST',
@@ -224,22 +223,22 @@ export const StockSearch: React.FC<StockSearchProps> = ({ onSelect, style }) => 
         body: JSON.stringify(requestBody),
       });
 
-      console.log('添加股票响应状态:', response.status);
+      console.log('Add stock response status:', response.status);
       const data = await response.json();
-      console.log('添加股票响应数据:', data);
+      console.log('Add stock response data:', data);
 
       if (!response.ok) {
         if (data.detail) {
           throw new Error(Array.isArray(data.detail) ? data.detail[0].msg : data.detail);
         }
-        throw new Error(data.error || '添加股票失败');
+        throw new Error(data.error || 'Failed to add stock');
       }
 
-      message.success(data.message || `成功添加 ${symbol} 到观察列表`);
-      onSelect(symbol);  // 通知父组件更新
+      message.success(data.message || `Successfully added ${symbol} to watchlist`);
+      onSelect(symbol);  // Notify parent component to update
     } catch (error) {
-      console.error('添加股票失败:', error);
-      message.error(error instanceof Error ? error.message : '添加股票失败');
+      console.error('Failed to add stock:', error);
+      message.error(error instanceof Error ? error.message : 'Failed to add stock');
     }
   };
 
@@ -248,15 +247,15 @@ export const StockSearch: React.FC<StockSearchProps> = ({ onSelect, style }) => 
       options={options}
       onSelect={onSelect}
       onSearch={searchStocks}
-      notFoundContent={loading ? <Spin size="small" /> : "未找到匹配项，尝试输入完整代码或公司名称"}
+      notFoundContent={loading ? <Spin size="small" /> : "No matches found, try entering full code or company name"}
       style={style}
       dropdownMatchSelectWidth={false}
     >
       <Input
-        placeholder="搜索股票代码或公司名称"
+        placeholder="Search stock code or company name"
         prefix={<SearchOutlined style={{ color: '#bfbfbf' }} />}
         allowClear
       />
     </AutoComplete>
   );
-}; 
+};

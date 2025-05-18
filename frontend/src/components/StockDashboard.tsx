@@ -23,7 +23,7 @@ interface StockCardProps {
 interface StockGroup {
   description: string;
   stocks: string[];
-  subGroups?: { [key: string]: StockGroup };  // 添加子文件夹
+  subGroups?: { [key: string]: StockGroup };  // Add sub-folders
 }
 
 interface GroupData {
@@ -45,9 +45,9 @@ interface WatchlistData {
 }
 
 const timeframeOptions = [
-  { label: '历史', options: [
-    { value: "D", label: '日线' },
-    { value: "W", label: '周线' }
+  { label: 'History', options: [
+    { value: "D", label: 'Daily' },
+    { value: "W", label: 'Weekly' }
   ]},
 ];
 
@@ -58,19 +58,19 @@ const StockCard: React.FC<StockCardProps> = ({ symbol, timeframe, backTestRange 
   const noteEditorRef = React.useRef<HTMLDivElement>(null);
   const analysisColRef = React.useRef<HTMLDivElement>(null);
 
-  // 计算编辑窗口位置的函数
+  // Function to calculate editor window position
   const calculateEditorPosition = () => {
     if (analysisColRef.current) {
       const rect = analysisColRef.current.getBoundingClientRect();
       return {
-        top: rect.top - 210, // 在分析报告上方20px
+        top: rect.top - 210, // 20px above analysis report
         left: rect.left,
       };
     }
     return null;
   };
 
-  // 修改点击外部处理函数
+  // Handle clicks outside the editor
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (noteEditorRef.current && !noteEditorRef.current.contains(event.target as Node)) {
@@ -87,7 +87,7 @@ const StockCard: React.FC<StockCardProps> = ({ symbol, timeframe, backTestRange 
     };
   }, [isEditingNote]);
 
-  // 获取备注
+  // Fetch note
   useEffect(() => {
     const fetchNote = async () => {
       try {
@@ -97,13 +97,13 @@ const StockCard: React.FC<StockCardProps> = ({ symbol, timeframe, backTestRange 
           setNote(data.note);
         }
       } catch (error) {
-        console.error('获取备注失败:', error);
+        console.error('Failed to fetch note:', error);
       }
     };
     fetchNote();
   }, [symbol]);
 
-  // 更新备注
+  // Update note
   const updateNote = async (newNote: string) => {
     try {
       const response = await fetch(`${process.env.REACT_APP_API_URL}/api/stock/note`, {
@@ -119,29 +119,29 @@ const StockCard: React.FC<StockCardProps> = ({ symbol, timeframe, backTestRange 
 
       if (response.ok) {
         setNote(newNote);
-        message.success('备注已更新');
+        message.success('Note updated');
       } else {
-        message.error('更新备注失败');
+        message.error('Failed to update note');
       }
     } catch (error) {
-      console.error('更新备注失败:', error);
-      message.error('更新备注失败');
+      console.error('Failed to update note:', error);
+      message.error('Failed to update note');
     }
   };
 
-  // 处理备注编辑
+  // Handle note edit
   const handleNoteEdit = () => {
     setEditedNote(note);
     setIsEditingNote(true);
   };
 
-  // 处理备注保存
+  // Handle note save
   const handleNoteSave = () => {
     updateNote(editedNote);
     setIsEditingNote(false);
   };
 
-  // 添加自动调整高度的函数
+  // Function to auto adjust height
   const autoAdjustHeight = (element: HTMLTextAreaElement) => {
     element.style.height = 'auto';
     element.style.height = `${element.scrollHeight}px`;
@@ -159,7 +159,7 @@ const StockCard: React.FC<StockCardProps> = ({ symbol, timeframe, backTestRange 
            timeframe === "W" ? "60M" : "1D";
   };
 
-  // 计算开始时间和结束时间
+  // Calculate start and end time
   const getFromTo = () => {
     if (timeframe === "BACKTEST" && backTestRange && backTestRange[0] && backTestRange[1]) {
       return {
@@ -213,7 +213,7 @@ const StockCard: React.FC<StockCardProps> = ({ symbol, timeframe, backTestRange 
                   alignItems: 'center',
                   gap: '8px'
                 }}>
-                  <span>编辑备注</span>
+                  <span>Edit Note</span>
                   <span style={{ 
                     color: '#1890ff', 
                     backgroundColor: '#e6f7ff', 
@@ -228,12 +228,12 @@ const StockCard: React.FC<StockCardProps> = ({ symbol, timeframe, backTestRange 
                   value={editedNote}
                   onChange={(e) => {
                     setEditedNote(e.target.value);
-                    // 自动调整高度
+                    // Auto adjust height
                     const textarea = e.target as HTMLTextAreaElement;
                     textarea.style.height = 'auto';
                     textarea.style.height = `${textarea.scrollHeight}px`;
                   }}
-                  placeholder="在此输入备注内容..."
+                  placeholder="Enter note here..."
                   autoFocus
                   autoSize={{ minRows: 3 }}
                   style={{ 
@@ -255,15 +255,15 @@ const StockCard: React.FC<StockCardProps> = ({ symbol, timeframe, backTestRange 
                   gap: '8px'
                 }}>
                   <Button onClick={() => setIsEditingNote(false)}>
-                    取消
+                    Cancel
                   </Button>
                   <Button type="primary" onClick={handleNoteSave}>
-                    保存
+                    Save
                   </Button>
                 </div>
               </div>
             ) : (
-              <Tooltip title={note || '点击添加备注'} placement="topRight">
+              <Tooltip title={note || 'Click to add note'} placement="topRight">
                 <div
                   onClick={handleNoteEdit}
                   style={{
@@ -277,7 +277,7 @@ const StockCard: React.FC<StockCardProps> = ({ symbol, timeframe, backTestRange 
                     textAlign: 'right'
                   }}
                 >
-                  {note ? note.split('\n')[0].slice(0, 30) + (note.split('\n')[0].length > 30 ? '...' : '') : '+ 添加备注'}
+                  {note ? note.split('\n')[0].slice(0, 30) + (note.split('\n')[0].length > 30 ? '...' : '') : '+ Add Note'}
                 </div>
               </Tooltip>
             )}
@@ -310,7 +310,6 @@ const StockCard: React.FC<StockCardProps> = ({ symbol, timeframe, backTestRange 
     </Card>
   );
 };
-
 const StockDashboard: React.FC = () => {
   const [watchlist, setWatchlist] = useState<WatchlistData>({ groups: {} });
   const [loading, setLoading] = useState(true);
@@ -321,10 +320,10 @@ const StockDashboard: React.FC = () => {
   const [timeframe, setTimeframe] = useState<StockCardProps['timeframe']>("D");
   const [selectedKeys, setSelectedKeys] = useState<Key[]>([]);
 
-  // 添加 ref 映射来存储每个股票卡片的引用
+  // Add ref mapping to store references to each stock card
   const stockRefs = React.useRef<{ [key: string]: HTMLDivElement | null }>({});
 
-  // 滚动到指定股票的函数
+  // Function to scroll to specified stock
   const scrollToStock = (symbol: string) => {
     const element = stockRefs.current[symbol];
     if (element) {
@@ -335,30 +334,30 @@ const StockDashboard: React.FC = () => {
     }
   };
 
-  // 获取观察列表
+  // Get watchlist
   const fetchWatchlist = async () => {
     try {
       const response = await fetch(`${process.env.REACT_APP_API_URL}/api/watchlist`);
       if (!response.ok) {
-        throw new Error('获取观察列表失败');
+        throw new Error('Failed to fetch watchlist');
       }
       const data = await response.json();
       
-      // 完全替换现有的 watchlist 状态
+      // Completely replace existing watchlist state
       setWatchlist({ groups: data.groups || {} });
       
-      // 清理 stockRefs
+      // Clear stockRefs
       stockRefs.current = {};
       
-      // 清除选中状态
+      // Clear selection state
       setSelectedStock(null);
       setSelectedKeys([]);
       
-      // 默认展开所有分组
+      // Expand all groups by default
       setExpandedKeys(getAllFolderKeys(data.groups));
     } catch (error) {
-      console.error('获取观察列表失败:', error);
-      message.error('获取观察列表失败');
+      console.error('Failed to fetch watchlist:', error);
+      message.error('Failed to fetch watchlist');
     } finally {
       setLoading(false);
     }
@@ -368,15 +367,15 @@ const StockDashboard: React.FC = () => {
     fetchWatchlist();
   }, []);
 
-  // 获取所有唯一的股票
+  // Get all unique stocks
   const getAllStocks = () => {
     const allStocks = new Set<string>();
     
     const addStocksFromGroup = (group: StockGroup) => {
-      // 添加当前分组的股票
+      // Add stocks from current group
       group.stocks.forEach(stock => allStocks.add(stock));
       
-      // 递归处理子分组
+      // Recursively process subgroups
       if (group.subGroups) {
         Object.values(group.subGroups).forEach(subGroup => {
           addStocksFromGroup(subGroup);
@@ -391,15 +390,15 @@ const StockDashboard: React.FC = () => {
     return Array.from(allStocks);
   };
 
-  // 获取已分组的股票
+  // Get grouped stocks
   const getGroupedStocks = () => {
     const groupedStocks = new Set<string>();
     
     const addStocksFromGroup = (group: StockGroup) => {
-      // 添加当前分组的股票
+      // Add stocks from current group
       group.stocks.forEach(stock => groupedStocks.add(stock));
       
-      // 递归处理子分组
+      // Recursively process subgroups
       if (group.subGroups) {
         Object.values(group.subGroups).forEach(subGroup => {
           addStocksFromGroup(subGroup);
@@ -408,7 +407,7 @@ const StockDashboard: React.FC = () => {
     };
     
     Object.entries(watchlist.groups).forEach(([groupName, group]) => {
-      if (groupName !== "默认分组") {
+      if (groupName !== "Default Group") {
         addStocksFromGroup(group);
       }
     });
@@ -416,14 +415,14 @@ const StockDashboard: React.FC = () => {
     return groupedStocks;
   };
 
-  // 获取未分组的股票
+  // Get ungrouped stocks
   const getUngroupedStocks = () => {
     const allStocks = getAllStocks();
     const groupedStocks = getGroupedStocks();
     return allStocks.filter(stock => !groupedStocks.has(stock));
   };
 
-  // 修改 handleDeleteStock 函数
+  // Handle stock deletion
   const handleDeleteStock = async (groupName: string, symbol: string) => {
     try {
       const response = await fetch(
@@ -435,30 +434,30 @@ const StockDashboard: React.FC = () => {
   
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.detail || '删除股票失败');
+        throw new Error(errorData.detail || 'Failed to delete stock');
       }
   
       await fetchWatchlist();
-      message.success('删除成功');
+      message.success('Successfully deleted');
     } catch (error) {
-      console.error('删除股票失败:', error);
-      message.error(error instanceof Error ? error.message : '删除股票失败');
+      console.error('Failed to delete stock:', error);
+      message.error(error instanceof Error ? error.message : 'Failed to delete stock');
     }
   };
 
-  // 修改 onDrop 处理函数
+  // Handle drop events
   const onDrop: TreeProps['onDrop'] = async (info) => {
     const dropKey = info.node.key as string;
     const dragKey = info.dragNode.key as string;
     const dropPos = info.node.pos.split('-');
     const dropPosition = info.dropPosition - Number(dropPos[dropPos.length - 1]);
     
-    // 处理文件夹的拖拽
+    // Handle folder drag and drop
     if (dragKey.startsWith('folder-')) {
         const sourceFolder = dragKey.replace('folder-', '');
         const targetFolder = dropKey.replace(/^(folder|stock)-/, '');
         
-        // 如果是重新排序（放在另一个文件夹的前面或后面）
+        // If reordering (placing before or after another folder)
         if (dropPosition === -1 || dropPosition === 1) {
             try {
                 const response = await fetch(`${process.env.REACT_APP_API_URL}/api/groups/reorder`, {
@@ -475,20 +474,20 @@ const StockDashboard: React.FC = () => {
 
                 if (!response.ok) {
                     const errorData = await response.json();
-                    throw new Error(errorData.error || '重新排序失败');
+                    throw new Error(errorData.error || 'Failed to reorder');
                 }
 
                 const data = await response.json();
                 setWatchlist({ groups: data.groups });
-                message.success('重新排序成功');
+                message.success('Successfully reordered');
             } catch (error) {
-                console.error('重新排序失败:', error);
-                message.error(error instanceof Error ? error.message : '重新排序失败');
+                console.error('Failed to reorder:', error);
+                message.error(error instanceof Error ? error.message : 'Failed to reorder');
             }
             return;
         }
         
-        // 如果是移动到另一个文件夹内部
+        // If moving into another folder
         try {
             const response = await fetch(`${process.env.REACT_APP_API_URL}/api/groups/move`, {
                 method: 'POST',
@@ -503,26 +502,26 @@ const StockDashboard: React.FC = () => {
 
             if (!response.ok) {
                 const errorData = await response.json();
-                throw new Error(errorData.error || '移动文件夹失败');
+                throw new Error(errorData.error || 'Failed to move folder');
             }
 
             const data = await response.json();
             setWatchlist({ groups: data.groups });
-            message.success('移动成功');
+            message.success('Successfully moved');
         } catch (error) {
-            console.error('移动文件夹失败:', error);
-            message.error(error instanceof Error ? error.message : '移动文件夹失败');
+            console.error('Failed to move folder:', error);
+            message.error(error instanceof Error ? error.message : 'Failed to move folder');
         }
         return;
     }
     
-    // 处理股票的拖拽
+    // Handle stock drag and drop
     if (dragKey.startsWith('stock-')) {
       const symbol = dragKey.replace('stock-', '');
       let fromGroup = '';
       let toGroup = '';
 
-      // 确定源分组
+      // Determine source group
       for (const [groupName, group] of Object.entries(watchlist.groups)) {
         if (group.stocks.includes(symbol)) {
           fromGroup = groupName;
@@ -530,15 +529,15 @@ const StockDashboard: React.FC = () => {
         }
       }
 
-      // 确定目标位置和分组
+      // Determine target position and group
       if (dropKey.startsWith('folder-')) {
-        // 如果拖到文件夹上，移动到该文件夹
+        // If dragged onto a folder, move to that folder
         toGroup = dropKey.replace('folder-', '');
       } else if (dropKey.startsWith('stock-')) {
-        // 如果拖到另一个股票上，可能是重新排序或移动到其他分组
+        // If dragged onto another stock, could be reordering or moving to another group
         const targetSymbol = dropKey.replace('stock-', '');
         
-        // 找到目标股票所在的分组
+        // Find target stock's group
         for (const [groupName, group] of Object.entries(watchlist.groups)) {
           if (group.stocks.includes(targetSymbol)) {
             toGroup = groupName;
@@ -546,10 +545,10 @@ const StockDashboard: React.FC = () => {
           }
         }
 
-        // 如果在同一个分组内，执行重新排序
+        // If within same group, reorder
         if (fromGroup === toGroup) {
           try {
-            // 构建完整的分组路径
+            // Build complete group path
             let fullGroupPath = '';
             for (const [groupName, group] of Object.entries(watchlist.groups)) {
               if (group.stocks.includes(targetSymbol)) {
@@ -582,43 +581,43 @@ const StockDashboard: React.FC = () => {
 
             if (!response.ok) {
               const errorData = await response.json();
-              throw new Error(errorData.error || '重新排序失败');
+              throw new Error(errorData.error || 'Failed to reorder');
             }
 
             const data = await response.json();
             setWatchlist({ groups: data.groups });
-            message.success('重新排序成功');
+            message.success('Successfully reordered');
             return;
           } catch (error) {
-            console.error('重新排序失败:', error);
-            message.error(error instanceof Error ? error.message : '重新排序失败');
+            console.error('Failed to reorder:', error);
+            message.error(error instanceof Error ? error.message : 'Failed to reorder');
             return;
           }
         }
       } else {
-        // 如果拖到未分组区域
-        toGroup = '默认分组';
+        // If dragged to ungrouped area
+        toGroup = 'Default Group';
       }
 
-      // 如果源分组和目标分组相同，不执行移动
+      // If source and target groups are the same, don't move
       if (fromGroup === toGroup) {
         return;
       }
 
       try {
-        // 获取要移动的所有股票
+        // Get stocks to move
         let stocksToMove: string[] = [];
         if (selectedKeys.length > 1 && selectedKeys.includes(dragKey)) {
-          // 如果有多个选中项且包含被拖拽的项，移动所有选中的股票
+          // If multiple items selected including dragged item, move all selected stocks
           stocksToMove = selectedKeys
             .filter(key => typeof key === 'string' && key.startsWith('stock-'))
             .map(key => (key as string).replace('stock-', ''));
         } else {
-          // 否则只移动被拖拽的股票
+          // Otherwise only move dragged stock
           stocksToMove = [symbol];
         }
 
-        // 依次移动每个股票
+        // Move each stock sequentially
         for (const stockSymbol of stocksToMove) {
           console.log(`Moving stock ${stockSymbol} from ${fromGroup} to ${toGroup}`);
           const response = await fetch(`${process.env.REACT_APP_API_URL}/api/watchlist/move`, {
@@ -635,17 +634,17 @@ const StockDashboard: React.FC = () => {
 
           if (!response.ok) {
             const errorData = await response.json();
-            throw new Error(errorData.error || '移动股票失败');
+            throw new Error(errorData.error || 'Failed to move stock');
           }
         }
 
-        // 移动成功后立即更新状态
+        // Update state immediately after successful move
         setWatchlist(prevState => {
           const newState = {
             groups: { ...prevState.groups }
           };
 
-          // 从源分组中移除股票
+          // Remove stocks from source group
           if (newState.groups[fromGroup]) {
             newState.groups[fromGroup] = {
               ...newState.groups[fromGroup],
@@ -653,7 +652,7 @@ const StockDashboard: React.FC = () => {
             };
           }
 
-          // 添加到目标分组
+          // Add to target group
           if (newState.groups[toGroup]) {
             newState.groups[toGroup] = {
               ...newState.groups[toGroup],
@@ -664,16 +663,16 @@ const StockDashboard: React.FC = () => {
           return newState;
         });
 
-        message.success(`成功移动 ${stocksToMove.length} 个股票到 ${toGroup}`);
-        setSelectedKeys([]); // 清除选中状态
+        message.success(`Successfully moved ${stocksToMove.length} stocks to ${toGroup}`);
+        setSelectedKeys([]); // Clear selection state
       } catch (error) {
-        console.error('移动股票失败:', error);
-        message.error(error instanceof Error ? error.message : '移动股票失败');
+        console.error('Failed to move stocks:', error);
+        message.error(error instanceof Error ? error.message : 'Failed to move stocks');
       }
     }
   };
 
-  // 新建文件夹
+  // Create new folder
   const handleAddFolder = async (values: { name: string; description: string }) => {
     try {
       const response = await fetch(`${process.env.REACT_APP_API_URL}/api/groups`, {
@@ -687,19 +686,19 @@ const StockDashboard: React.FC = () => {
         }),
       });
 
-      if (!response.ok) throw new Error('创建分组失败');
+      if (!response.ok) throw new Error('Failed to create group');
 
       await fetchWatchlist();
       setIsModalVisible(false);
       form.resetFields();
-      message.success('创建分组成功');
+      message.success('Group created successfully');
     } catch (error) {
-      console.error('创建分组失败:', error);
-      message.error('创建分组失败');
+      console.error('Failed to create group:', error);
+      message.error('Failed to create group');
     }
   };
 
-  // 修改 Tree 的 onSelect 处理函数
+  // Modify Tree onSelect handler
   const handleTreeSelect = (selectedKeys: Key[]) => {
     const key = selectedKeys[0] as string;
     if (key?.startsWith('stock-')) {
@@ -709,7 +708,7 @@ const StockDashboard: React.FC = () => {
     }
   };
 
-  // 添加 handleExpand 函数
+  // Add handleExpand function
   const handleExpand = (
     expandedKeys: Key[],
     info: {
@@ -721,7 +720,7 @@ const StockDashboard: React.FC = () => {
     setExpandedKeys(expandedKeys.map(key => String(key)));
   };
 
-  // 修改删除文件夹的处理函数
+  // Modify folder deletion handler
   const handleDeleteFolder = async (groupPath: string) => {
     try {
       const response = await fetch(
@@ -733,18 +732,18 @@ const StockDashboard: React.FC = () => {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || '删除文件夹失败');
+        throw new Error(errorData.error || 'Failed to delete folder');
       }
 
       await fetchWatchlist();
-      message.success('删除成功');
+      message.success('Successfully deleted');
     } catch (error) {
-      console.error('删除文件夹失败:', error);
-      message.error(error instanceof Error ? error.message : '删除文件夹失败');
+      console.error('Failed to delete folder:', error);
+      message.error(error instanceof Error ? error.message : 'Failed to delete folder');
     }
   };
 
-  // 修改 handleRenameFolder 函数
+  // Modify handleRenameFolder function
   const handleRenameFolder = async (groupPath: string, newName: string) => {
     try {
       const response = await fetch(`${process.env.REACT_APP_API_URL}/api/groups/rename`, {
@@ -753,25 +752,25 @@ const StockDashboard: React.FC = () => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          old_path: encodeURIComponent(groupPath),  // 编码路径中的特殊字符
+          old_path: encodeURIComponent(groupPath),  // Encode special characters in path
           new_name: newName,
         }),
       });
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || '重命名文件夹失败');
+        throw new Error(errorData.error || 'Failed to rename folder');
       }
 
       await fetchWatchlist();
-      message.success('重命名成功');
+      message.success('Successfully renamed');
     } catch (error) {
-      console.error('重命名文件夹失败:', error);
-      message.error(error instanceof Error ? error.message : '重命名文件夹失败');
+      console.error('Failed to rename folder:', error);
+      message.error(error instanceof Error ? error.message : 'Failed to rename folder');
     }
   };
 
-  // 修改 generateTreeData 函数
+  // Modify generateTreeData function
   const generateTreeData = (group: StockGroup, groupPath: string): DataNode => {
     const stockNodes: DataNode[] = group.stocks.map((stock: string) => ({
       title: (
@@ -786,7 +785,7 @@ const StockDashboard: React.FC = () => {
                 {
                   key: 'delete',
                   icon: <DeleteOutlined />,
-                  label: '删除',
+                  label: 'Delete',
                   onClick: () => handleDeleteStock(groupPath, stock)
                 }
               ]
@@ -804,13 +803,13 @@ const StockDashboard: React.FC = () => {
       isLeaf: true,
     }));
 
-    // 创建子文件夹节点
+    // Create subfolder nodes
     const subGroupNodes: DataNode[] = group.subGroups ? 
       Object.entries(group.subGroups).map(([subName, subGroup]) =>
         generateTreeData(subGroup, `${groupPath}/${subName}`)
       ) : [];
 
-    // 返回当前文件夹节点
+    // Return current folder node
     return {
       title: (
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -824,17 +823,17 @@ const StockDashboard: React.FC = () => {
                 {
                   key: 'rename',
                   icon: <EditOutlined />,
-                  label: '重命名',
+                  label: 'Rename',
                   onClick: () => {
                     const currentName = groupPath.split('/').pop() || '';
                     let inputRef: any = null;
 
                     Modal.confirm({
-                      title: '重命名文件夹',
+                      title: 'Rename Folder',
                       icon: <EditOutlined />,
                       content: (
                         <Input 
-                          placeholder="请输入新名称"
+                          placeholder="Enter new name"
                           defaultValue={currentName}
                           ref={node => {
                             if (node) {
@@ -868,11 +867,11 @@ const StockDashboard: React.FC = () => {
                 {
                   key: 'delete',
                   icon: <DeleteOutlined />,
-                  label: '删除文件夹',
+                  label: 'Delete Folder',
                   onClick: () => {
                     Modal.confirm({
-                      title: '确认删除',
-                      content: '删除文件夹后，其中的股票将被移动到默认分组。确定要删除吗？',
+                      title: 'Confirm Delete',
+                      content: 'After deleting the folder, stocks within it will be moved to the default group. Are you sure you want to delete?',
                       onOk: () => handleDeleteFolder(groupPath),
                     });
                   }
@@ -894,9 +893,9 @@ const StockDashboard: React.FC = () => {
     };
   };
 
-  // 修改 treeData 的生成
+  // Modify treeData generation
   const treeData: DataNode[] = [
-    // 未分组的股票
+    // Ungrouped stocks
     ...getUngroupedStocks().map((stock: string): DataNode => ({
       title: (
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -910,8 +909,8 @@ const StockDashboard: React.FC = () => {
                 {
                   key: 'delete',
                   icon: <DeleteOutlined />,
-                  label: '删除',
-                  onClick: () => handleDeleteStock('默认分组', stock)
+                  label: 'Delete',
+                  onClick: () => handleDeleteStock('Default Group', stock)
                 }
               ]
             }}
@@ -927,13 +926,13 @@ const StockDashboard: React.FC = () => {
       key: `stock-${stock}`,
       isLeaf: true,
     })),
-    // 分组的股票和子分组
+    // Grouped stocks and subgroups
     ...Object.entries(watchlist.groups)
-      .filter(([groupName]) => groupName !== "默认分组")
+      .filter(([groupName]) => groupName !== "Default Group")
       .map(([groupName, group]) => generateTreeData(group, groupName))
   ];
 
-  // 添加获取所有文件夹 key 的函数
+  // Add function to get all folder keys
   const getAllFolderKeys = (groups: GroupData): string[] => {
     const keys: string[] = [];
     
@@ -947,7 +946,7 @@ const StockDashboard: React.FC = () => {
     };
 
     Object.entries(groups)
-      .filter(([groupName]) => groupName !== "默认分组")
+      .filter(([groupName]) => groupName !== "Default Group")
       .forEach(([groupName, group]) => {
         addFolderKeys(groupName, group);
       });
@@ -955,31 +954,31 @@ const StockDashboard: React.FC = () => {
     return keys;
   };
 
-  // 添加展开/折叠所有文件夹的处理函数
+  // Add handler for expanding/collapsing all folders
   const handleExpandAll = (expand: boolean) => {
     if (expand) {
-      // 展开所有文件夹
+      // Expand all folders
       const allKeys = getAllFolderKeys(watchlist.groups);
       setExpandedKeys(allKeys);
     } else {
-      // 折叠所有文件夹
+      // Collapse all folders
       setExpandedKeys([]);
     }
   };
 
-  // 添加刷新目录的函数
+  // Add directory refresh function
   const handleRefreshDirectory = async () => {
     try {
       const response = await fetch(`${process.env.REACT_APP_API_URL}/api/watchlist`);
       if (!response.ok) {
-        throw new Error('获取观察列表失败');
+        throw new Error('Failed to get watchlist');
       }
       const data = await response.json();
       setWatchlist({ groups: data.groups || {} });
-      message.success('目录刷新成功');
+      message.success('Directory refreshed successfully');
     } catch (error) {
-      console.error('刷新目录失败:', error);
-      message.error('刷新目录失败');
+      console.error('Failed to refresh directory:', error);
+      message.error('Failed to refresh directory');
     }
   };
 
@@ -990,7 +989,7 @@ const StockDashboard: React.FC = () => {
           <StockSearch 
             onSelect={(symbol) => {
               setSelectedStock(symbol);
-              fetchWatchlist();  // 刷新观察列表
+              fetchWatchlist();  // Refresh watchlist
             }} 
             style={{ width: '100%' }}
           />
@@ -1002,16 +1001,16 @@ const StockDashboard: React.FC = () => {
               onClick={() => setIsModalVisible(true)}
               style={{ flex: 1 }}
             >
-              新建文件夹
+              New Folder
             </Button>
-            <Tooltip title="刷新目录" placement="bottom">
+            <Tooltip title="Refresh Directory" placement="bottom">
               <Button
                 icon={<ReloadOutlined />}
                 onClick={handleRefreshDirectory}
               />
             </Tooltip>
             <Tooltip 
-              title={expandedKeys.length === 0 ? "展开所有文件夹" : "折叠所有文件夹"}
+              title={expandedKeys.length === 0 ? "Expand All Folders" : "Collapse All Folders"}
               placement="bottom"
             >
               <Button
@@ -1047,9 +1046,8 @@ const StockDashboard: React.FC = () => {
             showIcon
           />
         )}
-
         <Modal
-          title="新建文件夹"
+          title="New Folder"
           open={isModalVisible}
           onCancel={() => setIsModalVisible(false)}
           onOk={() => form.submit()}
@@ -1057,14 +1055,14 @@ const StockDashboard: React.FC = () => {
           <Form form={form} onFinish={handleAddFolder}>
             <Form.Item
               name="name"
-              label="名称"
-              rules={[{ required: true, message: '请输入文件夹名称' }]}
+              label="Name"
+              rules={[{ required: true, message: 'Please enter folder name' }]}
             >
               <Input />
             </Form.Item>
             <Form.Item
               name="description"
-              label="描述"
+              label="Description"
             >
               <Input />
             </Form.Item>
@@ -1082,10 +1080,10 @@ const StockDashboard: React.FC = () => {
           />
         </div>
         
-        {/* 渲染未分组股票 */}
+        {/* Render ungrouped stocks */}
         {getUngroupedStocks().length > 0 && (
           <div>
-            <h2 style={{ margin: '16px 0' }}>未分组股票</h2>
+            <h2 style={{ margin: '16px 0' }}>Ungrouped Stocks</h2>
             {getUngroupedStocks().map(symbol => (
               <div 
                 key={symbol}
@@ -1104,9 +1102,9 @@ const StockDashboard: React.FC = () => {
           </div>
         )}
         
-        {/* 渲染分组和子分组的股票 */}
+        {/* Render grouped and sub-grouped stocks */}
         {Object.entries(watchlist.groups)
-          .filter(([groupName]) => groupName !== "默认分组")
+          .filter(([groupName]) => groupName !== "Default Group")
           .map(([groupName, group]) => {
             const renderStockGroup = (stocks: string[], indent: number = 0) => (
               <>
@@ -1132,10 +1130,10 @@ const StockDashboard: React.FC = () => {
             return (
               <div key={groupName}>
                 <h2 style={{ margin: '16px 0' }}>{groupName}</h2>
-                {/* 渲染当前分组的股票 */}
+                {/* Render current group stocks */}
                 {renderStockGroup(group.stocks)}
                 
-                {/* 渲染子分组的股票 */}
+                {/* Render subgroup stocks */}
                 {group.subGroups && Object.entries(group.subGroups).map(([subGroupName, subGroup]) => (
                   <div key={`${groupName}-${subGroupName}`}>
                     <h3 style={{ margin: '16px 0', paddingLeft: '20px' }}>{subGroupName}</h3>
@@ -1150,4 +1148,4 @@ const StockDashboard: React.FC = () => {
   );
 };
 
-export default StockDashboard; 
+export default StockDashboard;

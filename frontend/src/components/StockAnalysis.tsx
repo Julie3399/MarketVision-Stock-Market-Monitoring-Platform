@@ -6,7 +6,7 @@ import utc from 'dayjs/plugin/utc';
 import timezone from 'dayjs/plugin/timezone';
 import type { RangePickerProps } from 'antd/es/date-picker';
 
-// 添加 dayjs 插件
+// Add dayjs plugins
 dayjs.extend(utc);
 dayjs.extend(timezone);
 
@@ -16,21 +16,20 @@ interface AnalysisProps {
 
 const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:8002';
 
-// 首先定义信号解释的映射
+// Define signal explanations mapping
 const SIGNAL_EXPLANATIONS: { [key: string]: string } = {
-  "MACD金叉": "MACD线从下向上穿越信号线，表示可能出现上涨趋势，是买入信号。",
-  "MACD死叉": "MACD线从上向下穿越信号线，表示可能出现下跌趋势，是卖出信号。",
-  "RSI超买": "相对强弱指标(RSI)高于70，表示市场可能过热，股价可能回落。",
-  "RSI超卖": "相对强弱指标(RSI)低于30，表示市场可能见底，股价可能反弹。",
-  "KDJ金叉": "KDJ指标中，K线从下向上穿越D线，表示可能开始上涨，是买入信号。",
-  "KDJ死叉": "KDJ指标中，K线从上向下穿越D线，表示可能开始下跌，是卖出信号。",
-  "突破上轨": "股价突破布林带上轨，表示上涨趋势强劲，但也可能出现回调。",
-  "突破下轨": "股价突破布林带下轨，表示下跌趋势明显，但也可能出现反弹。",
-  "成交量突破": "当前成交量显著高于平均水平，表示市场活跃度增加。",
-  "量能减弱": "成交量低于平均水平，表示市场参与度下降。"
+  "MACD Golden Cross": "MACD line crosses above signal line, indicating potential upward trend, a buy signal.",
+  "MACD Death Cross": "MACD line crosses below signal line, indicating potential downward trend, a sell signal.",
+  "RSI Overbought": "Relative Strength Index (RSI) above 70, indicating market may be overheated and price may fall.",
+  "RSI Oversold": "Relative Strength Index (RSI) below 30, indicating market may have bottomed and price may rebound.",
+  "KDJ Golden Cross": "In KDJ indicator, K line crosses above D line, indicating potential uptrend, a buy signal.",
+  "KDJ Death Cross": "In KDJ indicator, K line crosses below D line, indicating potential downtrend, a sell signal.",
+  "Upper Band Breakout": "Price breaks above Bollinger Band, indicating strong uptrend but possible pullback.",
+  "Lower Band Breakout": "Price breaks below Bollinger Band, indicating clear downtrend but possible rebound.",
+  "Volume Breakout": "Current volume significantly higher than average, indicating increased market activity.",
+  "Volume Weakness": "Volume below average level, indicating decreased market participation."
 };
 
-// 修改 Analysis 接口定义
 interface Analysis {
   price: number;
   change: number;
@@ -40,10 +39,9 @@ interface Analysis {
   technical_signals: string[];
   volume_alert: string;
   date: string;
-  error?: string;  // 添加可选的 error 属性
+  error?: string;  // Optional error property
 }
 
-// 或者创建一个 AnalysisResponse 类型
 type AnalysisResponse = Analysis | { error: string };
 
 interface BackTestPrediction {
@@ -87,7 +85,7 @@ const StockAnalysis: React.FC<AnalysisProps> = ({ symbol }) => {
         const data = await response.json();
         setAnalysis(data);
       } catch (error) {
-        console.error('获取分析数据失败:', error);
+        console.error('Failed to fetch analysis data:', error);
       } finally {
         setLoading(false);
       }
@@ -101,13 +99,13 @@ const StockAnalysis: React.FC<AnalysisProps> = ({ symbol }) => {
       return;
     }
     
-    // 确保选择的是过去的日期
+    // Ensure selected date is in the past
     if (backTestDate.isAfter(dayjs())) {
-      message.error('不能选择未来的日期');
+      message.error('Cannot select future dates');
       return;
     }
     
-    // 获取选择日期的数据
+    // Get data for selected date
     const endDate = backTestDate.format('YYYY-MM-DD');
     const startDate = backTestDate.clone().subtract(60, 'day').format('YYYY-MM-DD');
     
@@ -123,13 +121,13 @@ const StockAnalysis: React.FC<AnalysisProps> = ({ symbol }) => {
           'Accept': 'application/json',
           'Origin': window.location.origin
         },
-        credentials: 'omit'  // 不发送 cookies
+        credentials: 'omit'  // Don't send cookies
       });
       
       if (!response.ok) {
         const errorText = await response.text();
         console.error('Response error:', response.status, errorText);
-        throw new Error(`请求失败: ${response.status} ${errorText}`);
+        throw new Error(`Request failed: ${response.status} ${errorText}`);
       }
       
       const data = await response.json();
@@ -141,10 +139,10 @@ const StockAnalysis: React.FC<AnalysisProps> = ({ symbol }) => {
       }
       
       setBackTestResults(data);
-      message.success('回测分析完成');
+      message.success('Backtest analysis completed');
     } catch (error) {
-      console.error('回测分析失败:', error);
-      message.error(error instanceof Error ? error.message : '回测分析失败，请稍后重试');
+      console.error('Backtest analysis failed:', error);
+      message.error(error instanceof Error ? error.message : 'Backtest analysis failed, please try again later');
     } finally {
       setIsBackTesting(false);
       setIsBackTestModalVisible(false);
@@ -160,15 +158,15 @@ const StockAnalysis: React.FC<AnalysisProps> = ({ symbol }) => {
   };
 
   const handleSignalClick = (signal: string) => {
-    // 修改处理函数来匹配部分信号文本
+    // Modify handler to match partial signal text
     let matchedSignal = signal;
-    if (signal.startsWith('RSI超买') || signal.startsWith('RSI超卖')) {
+    if (signal.startsWith('RSI Overbought') || signal.startsWith('RSI Oversold')) {
       matchedSignal = signal.split(' (')[0];
     }
     setSelectedSignal(matchedSignal);
   };
 
-  // 添加获取美国东部时间的函数
+  // Add function to get US Eastern time
   const getUsEasternTime = () => {
     return dayjs().tz('America/New_York').format('YYYY-MM-DD HH:mm:ss');
   };
@@ -177,18 +175,18 @@ const StockAnalysis: React.FC<AnalysisProps> = ({ symbol }) => {
     return <Spin />;
   }
 
-  // 使用类型守卫来检查是否有错误
+  // Use type guard to check for errors
   if (!analysis || 'error' in analysis) {
-    return <div>无法获取分析数据</div>;
+    return <div>Unable to fetch analysis data</div>;
   }
 
   return (
     <div style={{ height: '100%' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16 }}>
         <div style={{ textAlign: 'left' }}>
-          <h3 style={{ margin: 0, marginBottom: '4px', textAlign: 'left' }}>{symbol} 分析报告</h3>
+          <h3 style={{ margin: 0, marginBottom: '4px', textAlign: 'left' }}>{symbol} Analysis Report</h3>
           <div style={{ color: '#666', fontSize: '12px', textAlign: 'left' }}>
-            截止至 {getUsEasternTime()} EST
+            As of {getUsEasternTime()} EST
           </div>
         </div>
         <Space>
@@ -215,30 +213,30 @@ const StockAnalysis: React.FC<AnalysisProps> = ({ symbol }) => {
             icon={<HistoryOutlined />} 
             onClick={() => setIsBackTestModalVisible(true)}
           >
-            回测分析
+            Backtest Analysis
           </Button>
         </Space>
       </div>
       <Descriptions column={1} size="small">
-        <Descriptions.Item label="当前价格">
+        <Descriptions.Item label="Current Price">
           ${analysis.price.toFixed(2)}
           <Tag color={analysis.change >= 0 ? 'green' : 'red'} style={{ marginLeft: 8 }}>
             {analysis.change >= 0 ? <ArrowUpOutlined /> : <ArrowDownOutlined />}
             {Math.abs(analysis.change).toFixed(2)}%
           </Tag>
         </Descriptions.Item>
-        <Descriptions.Item label="成交量">
+        <Descriptions.Item label="Volume">
           {analysis.volume.toFixed(1)}M
         </Descriptions.Item>
-        <Descriptions.Item label="波动预警">
-          <Tag color={analysis.volatility_alert.includes('预警') ? 'red' : 'green'}>
+        <Descriptions.Item label="Volatility Alert">
+          <Tag color={analysis.volatility_alert.includes('Alert') ? 'red' : 'green'}>
             {analysis.volatility_alert}
           </Tag>
         </Descriptions.Item>
-        <Descriptions.Item label="资金流向">
+        <Descriptions.Item label="Money Flow">
           <Tag color={
-            analysis.money_flow.includes('流入') ? 'green' : 
-            analysis.money_flow.includes('外流') ? 'red' : 'blue'
+            analysis.money_flow.includes('Inflow') ? 'green' : 
+            analysis.money_flow.includes('Outflow') ? 'red' : 'blue'
           }>
             {analysis.money_flow}
           </Tag>
@@ -246,13 +244,13 @@ const StockAnalysis: React.FC<AnalysisProps> = ({ symbol }) => {
       </Descriptions>
 
       <div style={{ marginTop: 16 }}>
-        <h4>技术信号</h4>
+        <h4>Technical Signals</h4>
         <Space direction="vertical" style={{ width: '100%' }}>
           {analysis.technical_signals.map((signal: string, index: number) => (
             <Tag
               key={index}
-              color={signal.includes('金叉') || signal.includes('超卖') ? 'green' : 
-                     signal.includes('死叉') || signal.includes('超买') ? 'red' : 'blue'}
+              color={signal.includes('Golden Cross') || signal.includes('Oversold') ? 'green' : 
+                     signal.includes('Death Cross') || signal.includes('Overbought') ? 'red' : 'blue'}
               style={{ cursor: 'pointer' }}
               onClick={() => handleSignalClick(signal)}
             >
@@ -263,17 +261,16 @@ const StockAnalysis: React.FC<AnalysisProps> = ({ symbol }) => {
       </div>
 
       <div style={{ marginTop: 16 }}>
-        <h4>成交量分析</h4>
+        <h4>Volume Analysis</h4>
         <Tag color={
-          analysis.volume_alert.includes('突破') ? 'red' :
-          analysis.volume_alert.includes('清淡') ? 'orange' : 'green'
+          analysis.volume_alert.includes('Breakout') ? 'red' :
+          analysis.volume_alert.includes('Low') ? 'orange' : 'green'
         }>
           {analysis.volume_alert}
         </Tag>
       </div>
-
       <Modal
-        title="选择回测日期"
+        title="Select Backtest Date"
         open={isBackTestModalVisible}
         onOk={handleBackTest}
         onCancel={() => setIsBackTestModalVisible(false)}
@@ -284,56 +281,56 @@ const StockAnalysis: React.FC<AnalysisProps> = ({ symbol }) => {
           onChange={handleDateChange}
           value={backTestDate}
           disabledDate={current => {
-            // 禁用今天和未来的日期
+            // Disable today and future dates
             return current && current > dayjs().endOf('day');
           }}
           allowClear={true}
-          placeholder="选择要分析的交易日"
+          placeholder="Select trading day to analyze"
           presets={[
-            { label: '上月底', value: dayjs().subtract(1, 'month').endOf('month') },
-            { label: '三个月前', value: dayjs().subtract(3, 'month').endOf('month') },
+            { label: 'Last Month End', value: dayjs().subtract(1, 'month').endOf('month') },
+            { label: '3 Months Ago', value: dayjs().subtract(3, 'month').endOf('month') },
           ]}
         />
         <div style={{ marginTop: 8, fontSize: 12, color: '#666' }}>
-          选择日期后，系统将分析该日的市场信号，并用下一个交易日的数据验证预测准确性
+          After selecting a date, the system will analyze market signals for that day and verify predictions using the next trading day's data
         </div>
       </Modal>
 
       {isBackTesting && (
         <div style={{ marginTop: 16, textAlign: 'center' }}>
-          <Spin tip="回测分析中..." />
+          <Spin tip="Backtesting in progress..." />
         </div>
       )}
 
       {backTestResults && !isBackTesting && (
         <Card 
-          title={`${backTestResults.date} 分析报告回测`} 
+          title={`${backTestResults.date} Analysis Report Backtest`} 
           style={{ marginTop: 24, backgroundColor: '#fafafa' }}
           bordered={false}
         >
           <Descriptions column={1} size="small">
-            <Descriptions.Item label="当日价格">
+            <Descriptions.Item label="Day Price">
               ${backTestResults.price?.toFixed(2)}
               <Tag color={backTestResults.change >= 0 ? 'green' : 'red'} style={{ marginLeft: 8 }}>
                 {backTestResults.change >= 0 ? <ArrowUpOutlined /> : <ArrowDownOutlined />}
                 {Math.abs(backTestResults.change || 0).toFixed(2)}%
               </Tag>
             </Descriptions.Item>
-            <Descriptions.Item label="成交量">
+            <Descriptions.Item label="Volume">
               {backTestResults.volume?.toFixed(1)}M
             </Descriptions.Item>
             {backTestResults.volatility_alert && (
-              <Descriptions.Item label="波动预警">
-                <Tag color={backTestResults.volatility_alert?.includes('预警') ? 'red' : 'green'}>
+              <Descriptions.Item label="Volatility Alert">
+                <Tag color={backTestResults.volatility_alert?.includes('Alert') ? 'red' : 'green'}>
                   {backTestResults.volatility_alert}
                 </Tag>
               </Descriptions.Item>
             )}
             {backTestResults.money_flow && (
-              <Descriptions.Item label="资金流向">
+              <Descriptions.Item label="Money Flow">
                 <Tag color={
-                  backTestResults.money_flow?.includes('流入') ? 'green' : 
-                  backTestResults.money_flow?.includes('外流') ? 'red' : 'blue'
+                  backTestResults.money_flow?.includes('Inflow') ? 'green' : 
+                  backTestResults.money_flow?.includes('Outflow') ? 'red' : 'blue'
                 }>
                   {backTestResults.money_flow}
                 </Tag>
@@ -343,14 +340,14 @@ const StockAnalysis: React.FC<AnalysisProps> = ({ symbol }) => {
 
           {backTestResults.technical_signals && (
             <div style={{ marginTop: 16 }}>
-              <h4>技术信号</h4>
+              <h4>Technical Signals</h4>
               <Space direction="vertical" style={{ width: '100%' }}>
                 {backTestResults.technical_signals.map((signal: string, index: number) => (
                   <Tag 
                     key={index} 
                     color={
-                      signal?.includes('金叉') || signal?.includes('超卖') ? 'green' : 
-                      signal?.includes('死叉') || signal?.includes('超买') ? 'red' : 'blue'
+                      signal?.includes('Golden Cross') || signal?.includes('Oversold') ? 'green' : 
+                      signal?.includes('Death Cross') || signal?.includes('Overbought') ? 'red' : 'blue'
                     } 
                     style={{ margin: '4px 0', cursor: 'pointer' }}
                     onClick={() => handleSignalClick(signal)}
@@ -364,10 +361,10 @@ const StockAnalysis: React.FC<AnalysisProps> = ({ symbol }) => {
 
           {backTestResults.volume_alert && (
             <div style={{ marginTop: 16 }}>
-              <h4>成交量分析</h4>
+              <h4>Volume Analysis</h4>
               <Tag color={
-                backTestResults.volume_alert?.includes('突破') ? 'red' :
-                backTestResults.volume_alert?.includes('清淡') ? 'orange' : 'green'
+                backTestResults.volume_alert?.includes('Breakout') ? 'red' :
+                backTestResults.volume_alert?.includes('Low') ? 'orange' : 'green'
               }>
                 {backTestResults.volume_alert}
               </Tag>
@@ -376,9 +373,9 @@ const StockAnalysis: React.FC<AnalysisProps> = ({ symbol }) => {
 
           {backTestResults.next_day && (
             <div style={{ marginTop: 16 }}>
-              <h4>预测验证</h4>
+              <h4>Prediction Verification</h4>
               <Descriptions column={1} size="small">
-                <Descriptions.Item label="次日实际">
+                <Descriptions.Item label="Next Day Actual">
                   ${backTestResults.next_day.price?.toFixed(2)}
                   <Tag color={backTestResults.next_day.change >= 0 ? 'green' : 'red'} style={{ marginLeft: 8 }}>
                     {backTestResults.next_day.change >= 0 ? <ArrowUpOutlined /> : <ArrowDownOutlined />}
@@ -398,9 +395,9 @@ const StockAnalysis: React.FC<AnalysisProps> = ({ symbol }) => {
                     }}>
                       <Space>
                         <span>{prediction.signal}</span>
-                        <Tag color="blue">预测: {prediction.prediction}</Tag>
+                        <Tag color="blue">Prediction: {prediction.prediction}</Tag>
                         <Tag color={prediction.correct ? 'green' : 'red'}>
-                          {prediction.correct ? '预测正确' : '预测错误'}
+                          {prediction.correct ? 'Correct' : 'Incorrect'}
                         </Tag>
                       </Space>
                     </div>
@@ -411,7 +408,7 @@ const StockAnalysis: React.FC<AnalysisProps> = ({ symbol }) => {
               {backTestResults.accuracy !== null && backTestResults.accuracy !== undefined && (
                 <div style={{ marginTop: 8 }}>
                   <Tag color={backTestResults.accuracy >= 60 ? 'green' : 'red'}>
-                    预测准确率: {backTestResults.accuracy.toFixed(1)}%
+                    Prediction Accuracy: {backTestResults.accuracy.toFixed(1)}%
                   </Tag>
                 </div>
               )}
@@ -421,7 +418,7 @@ const StockAnalysis: React.FC<AnalysisProps> = ({ symbol }) => {
       )}
 
       <Modal
-        title="技术指标解释"
+        title="Technical Indicator Explanation"
         open={!!selectedSignal}
         onCancel={() => setSelectedSignal(null)}
         footer={null}
@@ -431,16 +428,16 @@ const StockAnalysis: React.FC<AnalysisProps> = ({ symbol }) => {
             <h3>{selectedSignal}</h3>
             <p>{SIGNAL_EXPLANATIONS[selectedSignal]}</p>
             <div style={{ marginTop: 16 }}>
-              <h4>如何使用这个信号：</h4>
+              <h4>How to Use This Signal:</h4>
               <ul>
-                <li>信号含义：{SIGNAL_EXPLANATIONS[selectedSignal]}</li>
-                <li>建议操作：{
-                  selectedSignal.includes('金叉') || selectedSignal.includes('超卖') ? 
-                    '考虑买入或持有' : 
-                    selectedSignal.includes('死叉') || selectedSignal.includes('超买') ?
-                    '考虑卖出或观望' : '密切关注市场变化'
+                <li>Signal Meaning: {SIGNAL_EXPLANATIONS[selectedSignal]}</li>
+                <li>Suggested Action: {
+                  selectedSignal.includes('Golden Cross') || selectedSignal.includes('Oversold') ? 
+                    'Consider buying or holding' : 
+                    selectedSignal.includes('Death Cross') || selectedSignal.includes('Overbought') ?
+                    'Consider selling or waiting' : 'Monitor market changes closely'
                 }</li>
-                <li>注意事项：技术指标仅供参考，请结合基本面和市场环境综合判断</li>
+                <li>Note: Technical indicators are for reference only, please combine with fundamentals and market conditions</li>
               </ul>
             </div>
           </div>
@@ -450,4 +447,4 @@ const StockAnalysis: React.FC<AnalysisProps> = ({ symbol }) => {
   );
 };
 
-export default StockAnalysis; 
+export default StockAnalysis;

@@ -6,12 +6,12 @@ import time
 import signal
 
 def run_backend():
-    """运行后端服务"""
+    """Run backend service"""
     backend_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'backend')
     os.chdir(backend_dir)
-    print("启动后端服务...")
+    print("Starting backend service...")
     
-    # 在 Windows 上使用 shell=True
+    # Use shell=True on Windows
     if sys.platform == 'win32':
         backend_process = subprocess.Popen(
             'uvicorn main:app --reload --port 8002',
@@ -25,12 +25,12 @@ def run_backend():
     return backend_process
 
 def run_frontend():
-    """运行前端服务"""
+    """Run frontend service"""
     frontend_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'frontend')
     os.chdir(frontend_dir)
-    print("启动前端服务...")
+    print("Starting frontend service...")
     
-    # 在 Windows 上使用 shell=True
+    # Use shell=True on Windows
     if sys.platform == 'win32':
         frontend_process = subprocess.Popen(
             'npm start',
@@ -44,28 +44,28 @@ def run_frontend():
     return frontend_process
 
 def main():
-    # 存储原始工作目录
+    # Store original working directory
     original_dir = os.getcwd()
     
     try:
-        # 启动后端
+        # Start backend
         backend_process = run_backend()
         
-        # 等待几秒钟确保后端启动
+        # Wait a few seconds to ensure backend is started
         time.sleep(2)
         
-        # 返回原始目录
+        # Return to original directory
         os.chdir(original_dir)
         
-        # 启动前端
+        # Start frontend
         frontend_process = run_frontend()
         
-        # 等待用户按 Ctrl+C
+        # Wait for user to press Ctrl+C
         try:
             backend_process.wait()
             frontend_process.wait()
         except KeyboardInterrupt:
-            print("\n正在关闭服务...")
+            print("\nShutting down services...")
             
             # 在 Windows 上
             if sys.platform == 'win32':
@@ -76,15 +76,15 @@ def main():
                 backend_process.send_signal(signal.SIGTERM)
                 frontend_process.send_signal(signal.SIGTERM)
             
-            # 等待进程结束
+            # Wait for processes to end
             backend_process.wait()
             frontend_process.wait()
             
-            print("服务已关闭")
+            print("Services have been shut down")
             
     except Exception as e:
-        print(f"发生错误: {e}")
-        # 确保进程被终止
+        print(f"An error occurred: {e}")
+        # Ensure processes are terminated
         try:
             backend_process.terminate()
             frontend_process.terminate()
@@ -94,4 +94,4 @@ def main():
         sys.exit(1)
 
 if __name__ == "__main__":
-    main() 
+    main()
