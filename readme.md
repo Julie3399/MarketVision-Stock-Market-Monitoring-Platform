@@ -23,7 +23,7 @@ A US stock market monitoring and analysis platform, integrating price tracking, 
 
 ### 1. Clone Repository
 ```bash
-git clone https://github.com/Julie3399/stock_monitor.git
+git clone -b english_version https://github.com/Julie3399/stock_monitor.git
 cd stock-monitor
 ```
 ### 2. Initialize Environment
