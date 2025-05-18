@@ -12,9 +12,9 @@
         "description": null,
         "stocks": [
           "XIACY",
+          "JD",
           "PDD",
           "BABA",
-          "JD",
           "BYDDY",
           "MPNGY",
           "TCEHY"
@@ -25,7 +25,10 @@
         "stocks": [
           "UBER",
           "ABNB",
-          "RZLV"
+          "NKE",
+          "PLTR",
+          "HOOD",
+          "SERV"
         ]
       }
     }
@@ -34,14 +37,14 @@
     "description": null,
     "stocks": [
       "NVDA",
-      "IBM",
       "AAPL",
+      "IBM",
       "GOOGL",
       "AVGO",
       "TSLA",
       "META",
-      "MSFT",
-      "AMZN"
+      "AMZN",
+      "MSFT"
     ],
     "subGroups": {}
   },
@@ -49,7 +52,6 @@
     "description": null,
     "stocks": [
       "LULU",
-      "KO",
       "WMT"
     ]
   }

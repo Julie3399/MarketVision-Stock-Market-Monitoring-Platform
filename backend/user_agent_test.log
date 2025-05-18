@@ -1,0 +1,99 @@
+2025-05-09 23:56:03,200 - user_agent_tester - INFO - 测试用户代理: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:89.0) Gecko/20100101 Firefox/89.0
+2025-05-09 23:56:03,200 - user_agent_tester - INFO - 等待 3.68 秒后请求 AAPL 数据
+2025-05-09 23:56:06,989 - user_agent_tester - WARNING - 失败: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:89.0) Gecko/20100101 Firefox/89.0 - AAPL - https://query2.finance.yahoo.com/v7/finance/chart/AAPL - 状态码: 429
+2025-05-09 23:56:06,990 - user_agent_tester - INFO - 等待 3.09 秒后请求 MSFT 数据
+2025-05-09 23:56:10,174 - user_agent_tester - WARNING - 失败: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:89.0) Gecko/20100101 Firefox/89.0 - MSFT - https://query2.finance.yahoo.com/v7/finance/chart/MSFT - 状态码: 429
+2025-05-09 23:56:10,175 - user_agent_tester - INFO - 等待 3.42 秒后请求 XIACY 数据
+2025-05-09 23:56:13,679 - user_agent_tester - WARNING - 失败: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:89.0) Gecko/20100101 Firefox/89.0 - XIACY - https://query1.finance.yahoo.com/v8/finance/chart/XIACY - 状态码: 429
+2025-05-09 23:56:13,679 - user_agent_tester - INFO - 测试用户代理: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36
+2025-05-09 23:56:13,679 - user_agent_tester - INFO - 等待 3.16 秒后请求 AAPL 数据
+2025-05-09 23:56:16,926 - user_agent_tester - WARNING - 失败: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36 - AAPL - https://query1.finance.yahoo.com/v7/finance/chart/AAPL - 状态码: 429
+2025-05-09 23:56:16,926 - user_agent_tester - INFO - 等待 4.22 秒后请求 MSFT 数据
+2025-05-09 23:56:21,226 - user_agent_tester - WARNING - 失败: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36 - MSFT - https://query2.finance.yahoo.com/v8/finance/chart/MSFT - 状态码: 429
+2025-05-09 23:56:21,227 - user_agent_tester - INFO - 等待 4.94 秒后请求 XIACY 数据
+2025-05-09 23:56:26,258 - user_agent_tester - WARNING - 失败: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36 - XIACY - https://query1.finance.yahoo.com/v8/finance/chart/XIACY - 状态码: 429
+2025-05-09 23:56:26,258 - user_agent_tester - INFO - 测试用户代理: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.0 Safari/605.1.15
+2025-05-09 23:56:26,258 - user_agent_tester - INFO - 等待 3.47 秒后请求 AAPL 数据
+2025-05-09 23:56:29,792 - user_agent_tester - WARNING - 失败: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.0 Safari/605.1.15 - AAPL - https://query2.finance.yahoo.com/v8/finance/chart/AAPL - 状态码: 429
+2025-05-09 23:56:29,792 - user_agent_tester - INFO - 等待 3.02 秒后请求 MSFT 数据
+2025-05-09 23:56:32,900 - user_agent_tester - WARNING - 失败: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.0 Safari/605.1.15 - MSFT - https://query1.finance.yahoo.com/v8/finance/chart/MSFT - 状态码: 429
+2025-05-09 23:56:32,900 - user_agent_tester - INFO - 等待 4.57 秒后请求 XIACY 数据
+2025-05-09 23:56:37,552 - user_agent_tester - WARNING - 失败: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.0 Safari/605.1.15 - XIACY - https://query1.finance.yahoo.com/v7/finance/chart/XIACY - 状态码: 429
+2025-05-09 23:56:37,553 - user_agent_tester - INFO - 测试用户代理: curl/7.68.0
+2025-05-09 23:56:37,553 - user_agent_tester - INFO - 等待 3.02 秒后请求 AAPL 数据
+2025-05-09 23:56:40,638 - user_agent_tester - WARNING - 失败: curl/7.68.0 - AAPL - https://query2.finance.yahoo.com/v8/finance/chart/AAPL - 状态码: 429
+2025-05-09 23:56:40,639 - user_agent_tester - INFO - 等待 3.31 秒后请求 MSFT 数据
+2025-05-09 23:56:44,016 - user_agent_tester - WARNING - 失败: curl/7.68.0 - MSFT - https://query1.finance.yahoo.com/v8/finance/chart/MSFT - 状态码: 429
+2025-05-09 23:56:44,017 - user_agent_tester - INFO - 等待 3.92 秒后请求 XIACY 数据
+2025-05-09 23:56:48,009 - user_agent_tester - WARNING - 失败: curl/7.68.0 - XIACY - https://query2.finance.yahoo.com/v8/finance/chart/XIACY - 状态码: 429
+2025-05-09 23:56:48,010 - user_agent_tester - INFO - 测试用户代理: Mozilla/5.0 (iPhone; CPU iPhone OS 16_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.0 Mobile/15E148 Safari/604.1
+2025-05-09 23:56:48,010 - user_agent_tester - INFO - 等待 3.92 秒后请求 AAPL 数据
+2025-05-09 23:56:52,012 - user_agent_tester - WARNING - 失败: Mozilla/5.0 (iPhone; CPU iPhone OS 16_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.0 Mobile/15E148 Safari/604.1 - AAPL - https://query1.finance.yahoo.com/v7/finance/chart/AAPL - 状态码: 429
+2025-05-09 23:56:52,012 - user_agent_tester - INFO - 等待 4.01 秒后请求 MSFT 数据
+2025-05-09 23:56:56,102 - user_agent_tester - WARNING - 失败: Mozilla/5.0 (iPhone; CPU iPhone OS 16_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.0 Mobile/15E148 Safari/604.1 - MSFT - https://query2.finance.yahoo.com/v8/finance/chart/MSFT - 状态码: 429
+2025-05-09 23:56:56,102 - user_agent_tester - INFO - 等待 3.39 秒后请求 XIACY 数据
+2025-05-09 23:56:59,586 - user_agent_tester - WARNING - 失败: Mozilla/5.0 (iPhone; CPU iPhone OS 16_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.0 Mobile/15E148 Safari/604.1 - XIACY - https://query2.finance.yahoo.com/v8/finance/chart/XIACY - 状态码: 429
+2025-05-09 23:56:59,586 - user_agent_tester - INFO - 测试用户代理: Mozilla/5.0 (iPad; CPU OS 16_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.0 Mobile/15E148 Safari/604.1
+2025-05-09 23:56:59,586 - user_agent_tester - INFO - 等待 4.41 秒后请求 AAPL 数据
+2025-05-09 23:57:04,070 - user_agent_tester - WARNING - 失败: Mozilla/5.0 (iPad; CPU OS 16_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.0 Mobile/15E148 Safari/604.1 - AAPL - https://query2.finance.yahoo.com/v7/finance/chart/AAPL - 状态码: 429
+2025-05-09 23:57:04,070 - user_agent_tester - INFO - 等待 4.01 秒后请求 MSFT 数据
+2025-05-09 23:57:08,155 - user_agent_tester - WARNING - 失败: Mozilla/5.0 (iPad; CPU OS 16_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.0 Mobile/15E148 Safari/604.1 - MSFT - https://query1.finance.yahoo.com/v8/finance/chart/MSFT - 状态码: 429
+2025-05-09 23:57:08,155 - user_agent_tester - INFO - 等待 3.26 秒后请求 XIACY 数据
+2025-05-09 23:57:11,487 - user_agent_tester - WARNING - 失败: Mozilla/5.0 (iPad; CPU OS 16_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.0 Mobile/15E148 Safari/604.1 - XIACY - https://query1.finance.yahoo.com/v7/finance/chart/XIACY - 状态码: 429
+2025-05-09 23:57:11,487 - user_agent_tester - INFO - 测试用户代理: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36 Edg/122.0.0.0
+2025-05-09 23:57:11,488 - user_agent_tester - INFO - 等待 4.52 秒后请求 AAPL 数据
+2025-05-09 23:57:16,066 - user_agent_tester - WARNING - 失败: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36 Edg/122.0.0.0 - AAPL - https://query2.finance.yahoo.com/v8/finance/chart/AAPL - 状态码: 429
+2025-05-09 23:57:16,066 - user_agent_tester - INFO - 等待 3.63 秒后请求 MSFT 数据
+2025-05-09 23:57:19,782 - user_agent_tester - WARNING - 失败: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36 Edg/122.0.0.0 - MSFT - https://query2.finance.yahoo.com/v8/finance/chart/MSFT - 状态码: 429
+2025-05-09 23:57:19,782 - user_agent_tester - INFO - 等待 3.47 秒后请求 XIACY 数据
+2025-05-09 23:57:23,336 - user_agent_tester - WARNING - 失败: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36 Edg/122.0.0.0 - XIACY - https://query2.finance.yahoo.com/v8/finance/chart/XIACY - 状态码: 429
+2025-05-09 23:57:23,337 - user_agent_tester - INFO - 测试用户代理: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36 OPR/108.0.0.0
+2025-05-09 23:57:23,337 - user_agent_tester - INFO - 等待 4.55 秒后请求 AAPL 数据
+2025-05-09 23:57:28,015 - user_agent_tester - INFO - 成功: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36 OPR/108.0.0.0 - AAPL - https://query2.finance.yahoo.com/v7/finance/chart/AAPL - 状态码: 200
+2025-05-09 23:57:28,015 - user_agent_tester - INFO - 等待 3.59 秒后请求 MSFT 数据
+2025-05-09 23:57:31,728 - user_agent_tester - INFO - 成功: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36 OPR/108.0.0.0 - MSFT - https://query1.finance.yahoo.com/v8/finance/chart/MSFT - 状态码: 200
+2025-05-09 23:57:31,728 - user_agent_tester - INFO - 等待 3.88 秒后请求 XIACY 数据
+2025-05-09 23:57:35,722 - user_agent_tester - INFO - 成功: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36 OPR/108.0.0.0 - XIACY - https://query1.finance.yahoo.com/v8/finance/chart/XIACY - 状态码: 200
+2025-05-09 23:57:35,722 - user_agent_tester - INFO - 
+===== 测试结果摘要 =====
+2025-05-09 23:57:35,723 - user_agent_tester - INFO - 用户代理: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:89.0) Gecko/20100101 Firefox/89.0
+2025-05-09 23:57:35,723 - user_agent_tester - INFO - 成功率: 0.00% (0/3)
+2025-05-09 23:57:35,723 - user_agent_tester - INFO - 成功股票: 
+2025-05-09 23:57:35,723 - user_agent_tester - INFO - 失败股票: AAPL, MSFT, XIACY
+2025-05-09 23:57:35,723 - user_agent_tester - INFO - ------------------------
+2025-05-09 23:57:35,723 - user_agent_tester - INFO - 用户代理: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36
+2025-05-09 23:57:35,723 - user_agent_tester - INFO - 成功率: 0.00% (0/3)
+2025-05-09 23:57:35,723 - user_agent_tester - INFO - 成功股票: 
+2025-05-09 23:57:35,723 - user_agent_tester - INFO - 失败股票: AAPL, MSFT, XIACY
+2025-05-09 23:57:35,723 - user_agent_tester - INFO - ------------------------
+2025-05-09 23:57:35,723 - user_agent_tester - INFO - 用户代理: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.0 Safari/605.1.15
+2025-05-09 23:57:35,723 - user_agent_tester - INFO - 成功率: 0.00% (0/3)
+2025-05-09 23:57:35,723 - user_agent_tester - INFO - 成功股票: 
+2025-05-09 23:57:35,724 - user_agent_tester - INFO - 失败股票: AAPL, MSFT, XIACY
+2025-05-09 23:57:35,724 - user_agent_tester - INFO - ------------------------
+2025-05-09 23:57:35,724 - user_agent_tester - INFO - 用户代理: curl/7.68.0
+2025-05-09 23:57:35,724 - user_agent_tester - INFO - 成功率: 0.00% (0/3)
+2025-05-09 23:57:35,724 - user_agent_tester - INFO - 成功股票: 
+2025-05-09 23:57:35,724 - user_agent_tester - INFO - 失败股票: AAPL, MSFT, XIACY
+2025-05-09 23:57:35,724 - user_agent_tester - INFO - ------------------------
+2025-05-09 23:57:35,724 - user_agent_tester - INFO - 用户代理: Mozilla/5.0 (iPhone; CPU iPhone OS 16_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.0 Mobile/15E148 Safari/604.1
+2025-05-09 23:57:35,724 - user_agent_tester - INFO - 成功率: 0.00% (0/3)
+2025-05-09 23:57:35,724 - user_agent_tester - INFO - 成功股票: 
+2025-05-09 23:57:35,724 - user_agent_tester - INFO - 失败股票: AAPL, MSFT, XIACY
+2025-05-09 23:57:35,724 - user_agent_tester - INFO - ------------------------
+2025-05-09 23:57:35,724 - user_agent_tester - INFO - 用户代理: Mozilla/5.0 (iPad; CPU OS 16_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.0 Mobile/15E148 Safari/604.1
+2025-05-09 23:57:35,724 - user_agent_tester - INFO - 成功率: 0.00% (0/3)
+2025-05-09 23:57:35,725 - user_agent_tester - INFO - 成功股票: 
+2025-05-09 23:57:35,725 - user_agent_tester - INFO - 失败股票: AAPL, MSFT, XIACY
+2025-05-09 23:57:35,725 - user_agent_tester - INFO - ------------------------
+2025-05-09 23:57:35,725 - user_agent_tester - INFO - 用户代理: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36 Edg/122.0.0.0
+2025-05-09 23:57:35,725 - user_agent_tester - INFO - 成功率: 0.00% (0/3)
+2025-05-09 23:57:35,725 - user_agent_tester - INFO - 成功股票: 
+2025-05-09 23:57:35,725 - user_agent_tester - INFO - 失败股票: AAPL, MSFT, XIACY
+2025-05-09 23:57:35,725 - user_agent_tester - INFO - ------------------------
+2025-05-09 23:57:35,725 - user_agent_tester - INFO - 用户代理: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36 OPR/108.0.0.0
+2025-05-09 23:57:35,725 - user_agent_tester - INFO - 成功率: 100.00% (3/3)
+2025-05-09 23:57:35,725 - user_agent_tester - INFO - 成功股票: AAPL, MSFT, XIACY
+2025-05-09 23:57:35,725 - user_agent_tester - INFO - 失败股票: 
+2025-05-09 23:57:35,726 - user_agent_tester - INFO - ------------------------
+2025-05-09 23:57:35,726 - user_agent_tester - INFO - 最佳用户代理: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36 OPR/108.0.0.0 (成功率: 100.00%)

@@ -7,6 +7,7 @@ import logging
 import pytz
 import requests
 from time import sleep
+import random
 
 logger = logging.getLogger(__name__)
 
@@ -16,89 +17,146 @@ class StockAnalyzer:
         self.charts_dir = Path(__file__).parent.parent / 'static' / 'charts'
         self.charts_dir.mkdir(parents=True, exist_ok=True)
         
-        # 设置请求头
+        # 设置多个用户代理
+        self.user_agents = [
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36 OPR/108.0.0.0"
+        ]
+        
+        # 设置请求头（初始化时随机选择一个用户代理）
         self.headers = {
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:89.0) Gecko/20100101 Firefox/89.0",
+            "User-Agent": random.choice(self.user_agents),
             "Accept": "application/json"
         }
+        
+        # 添加请求配置
+        self.max_retries = 3
+        self.base_delay = 2  # 基础延迟秒数
 
     def get_stock_data(self, ticker, period='1y', start=None, end=None):
         """使用Yahoo Finance API获取股票数据（支持时间范围或时间段）"""
-        try:
-            sleep(1)
-            # 优先使用明确的时间范围参数
-            use_date_range = start is not None or end is not None
-            
-            # 构建基础URL
-            url = f"https://query1.finance.yahoo.com/v8/finance/chart/{ticker}"
-            params = {
-                "interval": "1d",
-                "includePrePost": True,
-                "events": "div,splits,capitalGains"
-            }
-
-            if use_date_range:
-                # 处理日期范围模式
-                start_date = pd.to_datetime(start)
-                end_date = pd.to_datetime(end)
-                
-                # 转换为Unix时间戳（秒）
-                params.update({
-                    "period1": int(start_date.timestamp()),
-                    "period2": int(end_date.timestamp())
-                })
-            else:
-                # 处理时间段模式
-                period_map = {
-                    '1d': '1d', '5d': '5d', '1mo': '1mo', '3mo': '3mo',
-                    '6mo': '6mo', '1y': '1y', '2y': '2y', '5y': '5y', 'max': 'max'
-                }
-                params["range"] = period_map.get(period, '1y')
-
-            # 发送请求
-            response = requests.get(url, headers=self.headers, params=params)
-            
-            if response.status_code != 200:
-                logger.error(f"获取{ticker}数据失败，状态码: {response.status_code}")
-                return None
-
-            data = response.json()
-            
-            try:
-                chart_data = data['chart']['result'][0]
-                timestamps = chart_data['timestamp']
-                quote = chart_data['indicators']['quote'][0]
-                
-                # 创建DataFrame
-                df = pd.DataFrame({
-                    'Open': quote.get('open', []),
-                    'High': quote.get('high', []),
-                    'Low': quote.get('low', []),
-                    'Close': quote.get('close', []),
-                    'Volume': quote.get('volume', [])
-                }, index=pd.to_datetime(timestamps, unit='s'))
-                
-                # 处理调整后的收盘价
-                if 'adjclose' in chart_data['indicators']:
-                    df['Adj Close'] = chart_data['indicators']['adjclose'][0]['adjclose']
-                
-                # 清理数据：移除NaN和重复索引
-                df = df.dropna().loc[~df.index.duplicated(keep='first')]
-                
-                # 确保时间范围有效性（当使用start/end时）
-                if use_date_range:
-                    df = df.loc[start_date:end_date]
-                
-                return df
-
-            except (KeyError, IndexError) as e:
-                logger.error(f"解析{ticker}数据失败: {str(e)}")
-                return None
-                
-        except Exception as e:
-            logger.error(f"获取{ticker}股票数据异常: {str(e)}")
-            return None
+        retries = 0
+        delay = self.base_delay
         
+        while retries <= self.max_retries:
+            try:
+                # 每次请求前随机选择一个用户代理
+                self.headers["User-Agent"] = random.choice(self.user_agents)
+                
+                # 添加更多浏览器常见请求头
+                self.headers.update({
+                    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
+                    "Accept-Language": "zh-CN,zh;q=0.9,en;q=0.8",
+                    "Accept-Encoding": "gzip, deflate, br",
+                    "Connection": "keep-alive",
+                    "Referer": "https://finance.yahoo.com/",
+                    "Sec-Fetch-Dest": "document",
+                    "Sec-Fetch-Mode": "navigate",
+                    "Sec-Fetch-Site": "same-origin",
+                    "Upgrade-Insecure-Requests": "1"
+                })
+                
+                # 添加随机延迟，避免固定间隔请求
+                sleep_time = delay + random.uniform(0.5, 1.5)
+                logger.info(f"等待 {sleep_time:.2f} 秒后请求 {ticker} 数据")
+                sleep(sleep_time)
+                
+                # 优先使用明确的时间范围参数
+                use_date_range = start is not None or end is not None
+                
+                # 构建基础URL
+                url = f"https://query2.finance.yahoo.com/v8/finance/chart/{ticker}"
+                params = {
+                    "interval": "1d",
+                    "includePrePost": True,
+                    "events": "div,splits,capitalGains"
+                }
+
+                if use_date_range:
+                    # 处理日期范围模式
+                    start_date = pd.to_datetime(start)
+                    end_date = pd.to_datetime(end)
+                    
+                    # 转换为Unix时间戳（秒）
+                    params.update({
+                        "period1": int(start_date.timestamp()),
+                        "period2": int(end_date.timestamp())
+                    })
+                else:
+                    # 处理时间段模式
+                    period_map = {
+                        '1d': '1d', '5d': '5d', '1mo': '1mo', '3mo': '3mo',
+                        '6mo': '6mo', '1y': '1y', '2y': '2y', '5y': '5y', 'max': 'max'
+                    }
+                    params["range"] = period_map.get(period, '1y')
+
+                # 发送请求
+                response = requests.get(url, headers=self.headers, params=params)
+                
+                if response.status_code == 429:
+                    logger.warning(f"请求 {ticker} 遇到限流 (429)，尝试通过Google代理获取数据")
+                    google_data = self.get_stock_data_via_google(ticker, period, params["interval"])
+                    if google_data is not None:
+                        logger.info(f"成功通过Google代理获取 {ticker} 数据")
+                        # 不直接返回，而是将数据赋值给data变量，继续后续处理
+                        data = google_data
+                        # 跳过重试逻辑，直接进入数据处理部分
+                        break
+                    else:
+                        logger.error(f"无法通过Google代理获取 {ticker} 数据")
+                        # 继续执行重试逻辑
+                        retries += 1
+                        delay *= 2  # 指数退避
+                        logger.warning(f"请求 {ticker} 遇到限流 (429)，第 {retries} 次重试，等待 {delay} 秒")
+                        continue
+                
+                if response.status_code != 200:
+                    logger.error(f"获取{ticker}数据失败，状态码: {response.status_code}")
+                    return None
+
+                data = response.json()
+                
+                try:
+                    chart_data = data['chart']['result'][0]
+                    timestamps = chart_data['timestamp']
+                    quote = chart_data['indicators']['quote'][0]
+                    
+                    # 创建DataFrame
+                    df = pd.DataFrame({
+                        'Open': quote.get('open', []),
+                        'High': quote.get('high', []),
+                        'Low': quote.get('low', []),
+                        'Close': quote.get('close', []),
+                        'Volume': quote.get('volume', [])
+                    }, index=pd.to_datetime(timestamps, unit='s'))
+                    
+                    # 处理调整后的收盘价
+                    if 'adjclose' in chart_data['indicators']:
+                        df['Adj Close'] = chart_data['indicators']['adjclose'][0]['adjclose']
+                    
+                    # 清理数据：移除NaN和重复索引
+                    df = df.dropna().loc[~df.index.duplicated(keep='first')]
+                    
+                    # 确保时间范围有效性（当使用start/end时）
+                    if use_date_range:
+                        df = df.loc[start_date:end_date]
+                    
+                    return df
+
+                except (KeyError, IndexError) as e:
+                    logger.error(f"解析{ticker}数据失败: {str(e)}")
+                    return None
+                    
+            except Exception as e:
+                logger.error(f"获取{ticker}股票数据异常: {str(e)}")
+                retries += 1
+                delay *= 2  # 指数退避
+                if retries <= self.max_retries:
+                    logger.warning(f"第 {retries} 次重试获取 {ticker} 数据，等待 {delay} 秒")
+                else:
+                    logger.error(f"获取 {ticker} 数据失败，已达到最大重试次数")
+                    return None
+        
+        return None
         
     def generate_daily_report(self, ticker):
         """生成每日分析报告"""
